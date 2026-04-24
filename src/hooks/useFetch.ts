@@ -1,0 +1,46 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+interface UseFetchState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+/**
+ * A generic data-fetching hook with loading and error states.
+ *
+ * @example
+ * const { data, loading, error, refetch } = useFetch<User[]>(() =>
+ *   fetch('https://api.example.com/users').then(r => r.json())
+ * );
+ */
+export function useFetch<T>(
+  fetchFn: () => Promise<T>,
+  deps: React.DependencyList = []
+): UseFetchState<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
+
+  const execute = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchFnRef.current();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    execute();
+  }, [execute]);
+
+  return { data, loading, error, refetch: execute };
+}
