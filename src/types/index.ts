@@ -1,4 +1,5 @@
 // Navigation param types
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type RootStackParamList = {
   Main: undefined;
   Home: undefined;
@@ -10,11 +11,12 @@ export type RootStackParamList = {
   Register: undefined;
 };
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type BottomTabParamList = {
   HomeTab: undefined;
   ExploreTab: undefined;
-  FavoritesTab: undefined;
   ProfileTab: undefined;
+  SettingsTab: undefined;
 };
 
 // Common data types

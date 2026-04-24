@@ -17,14 +17,18 @@ interface UseFetchState<T> {
  */
 export function useFetch<T>(
   fetchFn: () => Promise<T>,
-  deps: React.DependencyList = []
+  _deps: React.DependencyList = [],
 ): UseFetchState<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const fetchFnRef = useRef(fetchFn);
-  fetchFnRef.current = fetchFn;
 
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const execute = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -36,11 +40,19 @@ export function useFetch<T>(
     } finally {
       setLoading(false);
     }
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    execute();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void execute();
   }, [execute]);
 
-  return { data, loading, error, refetch: execute };
+  return {
+    data,
+    loading,
+    error,
+    refetch: () => {
+      void execute();
+    },
+  };
 }

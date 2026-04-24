@@ -1,12 +1,13 @@
-import React from 'react';
+import type React from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  TextInputProps,
-  ViewStyle,
+  type TextInputProps,
+  type ViewStyle,
 } from 'react-native';
+
 import { Colors, Radii, Spacing, Typography } from '../theme';
 
 interface InputProps extends TextInputProps {
@@ -29,10 +30,10 @@ export const Input: React.FC<InputProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[styles.inputWrapper, error && styles.inputError]}>
+      <View style={[styles.inputWrapper, error ? styles.inputError : undefined]}>
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
         <TextInput
-          style={[styles.input, leftIcon && styles.inputWithLeftIcon, style]}
+          style={[styles.input, leftIcon ? styles.inputWithLeftIcon : undefined, style]}
           placeholderTextColor={Colors.textMuted}
           selectionColor={Colors.primary}
           {...rest}

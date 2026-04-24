@@ -1,18 +1,20 @@
-import React from 'react';
+/* eslint-disable react-native/no-unused-styles, react-native/no-color-literals */
+import type React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  ViewStyle,
-  TextStyle,
+  type ViewStyle,
+  type TextStyle,
 } from 'react-native';
+
 import { Colors, Radii, Spacing, Typography, Shadows } from '../theme';
 
 interface ButtonProps {
   title: string;
-  onPress: () => void;
+  onPress?: () => void;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
@@ -58,7 +60,7 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator
           color={variant === 'primary' ? Colors.textPrimary : Colors.primary}
-          size="small"
+          size='small'
         />
       ) : (
         <View style={styles.content}>

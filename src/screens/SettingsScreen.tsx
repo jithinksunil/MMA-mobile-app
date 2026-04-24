@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
 import { Colors, Spacing, Typography, Radii } from '../theme';
 import { Card } from '../components';
 
 interface SettingRowProps {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   iconColor: string;
   label: string;
   description?: string;
@@ -36,16 +30,14 @@ const SettingRow: React.FC<SettingRowProps> = ({
     disabled={!onPress}
   >
     <View style={[styles.settingIcon, { backgroundColor: iconColor + '22' }]}>
-      <Ionicons name={icon as any} size={20} color={iconColor} />
+      <Ionicons name={icon} size={20} color={iconColor} />
     </View>
     <View style={styles.settingText}>
       <Text style={styles.settingLabel}>{label}</Text>
       {description && <Text style={styles.settingDescription}>{description}</Text>}
     </View>
     <View style={styles.settingRight}>
-      {rightElement ?? (
-        <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
-      )}
+      {rightElement ?? <Ionicons name='chevron-forward' size={16} color={Colors.textMuted} />}
     </View>
   </TouchableOpacity>
 );
@@ -68,27 +60,27 @@ export const SettingsScreen: React.FC = () => {
         <Text style={styles.sectionLabel}>ACCOUNT</Text>
         <Card style={styles.settingsCard}>
           <SettingRow
-            icon="person-circle"
+            icon='person-circle'
             iconColor={Colors.primary}
-            label="Edit Profile"
-            description="Update your personal info"
-            onPress={() => {}}
+            label='Edit Profile'
+            description='Update your personal info'
+            onPress={undefined}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="shield-checkmark"
+            icon='shield-checkmark'
             iconColor={Colors.success}
-            label="Security"
-            description="Password and authentication"
-            onPress={() => {}}
+            label='Security'
+            description='Password and authentication'
+            onPress={undefined}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="key"
+            icon='key'
             iconColor={Colors.warning}
-            label="Privacy"
-            description="Control your data"
-            onPress={() => {}}
+            label='Privacy'
+            description='Control your data'
+            onPress={undefined}
           />
         </Card>
 
@@ -96,10 +88,10 @@ export const SettingsScreen: React.FC = () => {
         <Text style={styles.sectionLabel}>PREFERENCES</Text>
         <Card style={styles.settingsCard}>
           <SettingRow
-            icon="notifications"
+            icon='notifications'
             iconColor={Colors.info}
-            label="Notifications"
-            description="Push and email alerts"
+            label='Notifications'
+            description='Push and email alerts'
             rightElement={
               <Switch
                 value={notifications}
@@ -111,9 +103,9 @@ export const SettingsScreen: React.FC = () => {
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="moon"
+            icon='moon'
             iconColor={Colors.secondary}
-            label="Dark Mode"
+            label='Dark Mode'
             rightElement={
               <Switch
                 value={darkMode}
@@ -125,10 +117,10 @@ export const SettingsScreen: React.FC = () => {
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="bar-chart"
+            icon='bar-chart'
             iconColor={Colors.success}
-            label="Analytics"
-            description="Help improve the app"
+            label='Analytics'
+            description='Help improve the app'
             rightElement={
               <Switch
                 value={analytics}
@@ -144,24 +136,24 @@ export const SettingsScreen: React.FC = () => {
         <Text style={styles.sectionLabel}>SUPPORT</Text>
         <Card style={styles.settingsCard}>
           <SettingRow
-            icon="help-circle"
+            icon='help-circle'
             iconColor={Colors.info}
-            label="Help & FAQ"
-            onPress={() => {}}
+            label='Help & FAQ'
+            onPress={undefined}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="chatbubble-ellipses"
+            icon='chatbubble-ellipses'
             iconColor={Colors.primary}
-            label="Contact Support"
-            onPress={() => {}}
+            label='Contact Support'
+            onPress={undefined}
           />
           <View style={styles.divider} />
           <SettingRow
-            icon="star"
+            icon='star'
             iconColor={Colors.secondary}
-            label="Rate the App"
-            onPress={() => {}}
+            label='Rate the App'
+            onPress={undefined}
           />
         </Card>
 
@@ -170,7 +162,7 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Sign Out */}
         <TouchableOpacity style={styles.signOutBtn} activeOpacity={0.8}>
-          <Ionicons name="log-out-outline" size={20} color={Colors.error} />
+          <Ionicons name='log-out-outline' size={20} color={Colors.error} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 

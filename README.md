@@ -7,16 +7,19 @@ A production-ready React Native template built with **Expo** for building cross-
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - [Expo Go](https://expo.dev/client) app on your phone (for quick testing)
 - Android Studio (for Android emulator) or Xcode (for iOS simulator)
 
 ### Install dependencies
+
 ```bash
 npm install
 ```
 
 ### Run the app
+
 ```bash
 # Start Expo dev server (scan QR with Expo Go)
 npm start
@@ -70,23 +73,25 @@ FightingApp/
 
 The theme (`src/theme/index.ts`) provides:
 
-| Token | Description |
-|-------|-------------|
-| `Colors` | Dark-mode palette with primary (#FF4B2B), surfaces, text, status colors |
-| `Typography` | Font sizes from `xs` (11) to `xxxl` (38) |
-| `Spacing` | 7-step scale from `xs` (4px) to `xxxl` (64px) |
-| `Radii` | Border radius presets from `xs` to `full` |
-| `Shadows` | `sm`, `md`, `lg` shadow presets |
+| Token        | Description                                                             |
+| ------------ | ----------------------------------------------------------------------- |
+| `Colors`     | Dark-mode palette with primary (#FF4B2B), surfaces, text, status colors |
+| `Typography` | Font sizes from `xs` (11) to `xxxl` (38)                                |
+| `Spacing`    | 7-step scale from `xs` (4px) to `xxxl` (64px)                           |
+| `Radii`      | Border radius presets from `xs` to `full`                               |
+| `Shadows`    | `sm`, `md`, `lg` shadow presets                                         |
 
 ---
 
 ## 🧭 Navigation
 
 Uses **React Navigation v7** with:
+
 - `NativeStackNavigator` — root stack for screen transitions
 - `BottomTabNavigator` — 4 main tabs (Home, Explore, Profile, Settings)
 
 To add a new screen:
+
 1. Create it in `src/screens/`
 2. Add its type to `RootStackParamList` in `src/types/index.ts`
 3. Register it in `src/navigation/AppNavigator.tsx`
@@ -96,28 +101,26 @@ To add a new screen:
 ## 🧩 Reusable Components
 
 ### `<Button />`
+
 ```tsx
-<Button title="Click me" onPress={fn} variant="primary" size="md" />
+<Button title='Click me' onPress={fn} variant='primary' size='md' />
 // Variants: primary | secondary | outline | ghost
 // Sizes: sm | md | lg
 ```
 
 ### `<Card />`
+
 ```tsx
 <Card onPress={fn} elevated>
-  <CardHeader title="Title" subtitle="Subtitle" />
+  <CardHeader title='Title' subtitle='Subtitle' />
   {/* content */}
 </Card>
 ```
 
 ### `<Input />`
+
 ```tsx
-<Input
-  label="Email"
-  placeholder="you@example.com"
-  error={errorMsg}
-  keyboardType="email-address"
-/>
+<Input label='Email' placeholder='you@example.com' error={errorMsg} keyboardType='email-address' />
 ```
 
 ---
@@ -125,14 +128,16 @@ To add a new screen:
 ## 🪝 Custom Hooks
 
 ### `useToggle`
+
 ```ts
 const { value: isOpen, toggle, setFalse: close } = useToggle(false);
 ```
 
 ### `useFetch<T>`
+
 ```ts
 const { data, loading, error, refetch } = useFetch<User[]>(() =>
-  fetch('https://api.example.com/users').then(r => r.json())
+  fetch('https://api.example.com/users').then((r) => r.json()),
 );
 ```
 
@@ -157,12 +162,12 @@ eas build --platform ios
 
 ## 📦 Key Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `expo` | Cross-platform SDK |
-| `@react-navigation/native` | Navigation |
-| `@react-navigation/bottom-tabs` | Tab navigation |
-| `@react-navigation/native-stack` | Stack navigation |
-| `react-native-safe-area-context` | Safe area handling |
-| `react-native-screens` | Native screen optimization |
-| `@expo/vector-icons` | Icon library (Ionicons etc.) |
+| Package                          | Purpose                      |
+| -------------------------------- | ---------------------------- |
+| `expo`                           | Cross-platform SDK           |
+| `@react-navigation/native`       | Navigation                   |
+| `@react-navigation/bottom-tabs`  | Tab navigation               |
+| `@react-navigation/native-stack` | Stack navigation             |
+| `react-native-safe-area-context` | Safe area handling           |
+| `react-native-screens`           | Native screen optimization   |
+| `@expo/vector-icons`             | Icon library (Ionicons etc.) |

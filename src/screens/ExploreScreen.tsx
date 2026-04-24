@@ -1,21 +1,21 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import type React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
 import { Colors, Spacing, Typography, Radii } from '../theme';
 import { Card } from '../components';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - Spacing.md * 2 - Spacing.sm) / 2;
 
-const CATEGORIES = [
+const CATEGORIES: {
+  id: string;
+  name: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  count: number;
+  color: string;
+}[] = [
   { id: '1', name: 'Category A', icon: 'cube', count: 24, color: Colors.primary },
   { id: '2', name: 'Category B', icon: 'planet', count: 18, color: Colors.secondary },
   { id: '3', name: 'Category C', icon: 'diamond', count: 31, color: Colors.info },
@@ -42,10 +42,10 @@ export const ExploreScreen: React.FC = () => {
 
         {/* Search Bar */}
         <TouchableOpacity style={styles.searchBar} activeOpacity={0.8}>
-          <Ionicons name="search" size={18} color={Colors.textMuted} />
+          <Ionicons name='search' size={18} color={Colors.textMuted} />
           <Text style={styles.searchPlaceholder}>Search anything...</Text>
           <View style={styles.searchFilter}>
-            <Ionicons name="options" size={16} color={Colors.primary} />
+            <Ionicons name='options' size={16} color={Colors.primary} />
           </View>
         </TouchableOpacity>
 
@@ -59,7 +59,7 @@ export const ExploreScreen: React.FC = () => {
               activeOpacity={0.8}
             >
               <View style={[styles.categoryIcon, { backgroundColor: cat.color + '22' }]}>
-                <Ionicons name={cat.icon as any} size={26} color={cat.color} />
+                <Ionicons name={cat.icon} size={26} color={cat.color} />
               </View>
               <Text style={styles.categoryName}>{cat.name}</Text>
               <Text style={styles.categoryCount}>{cat.count} items</Text>
@@ -76,25 +76,25 @@ export const ExploreScreen: React.FC = () => {
         </View>
 
         {EXPLORE_ITEMS.map((item) => (
-          <Card key={item.id} style={styles.exploreCard} onPress={() => {}} elevated>
+          <Card key={item.id} style={styles.exploreCard} onPress={undefined} elevated>
             <View style={styles.exploreImagePlaceholder}>
-              <Ionicons name="image" size={32} color={Colors.textMuted} />
+              <Ionicons name='image' size={32} color={Colors.textMuted} />
             </View>
             <View style={styles.exploreInfo}>
               <Text style={styles.exploreCategory}>{item.category}</Text>
               <Text style={styles.exploreTitle}>{item.title}</Text>
               <View style={styles.exploreStats}>
                 <View style={styles.exploreStat}>
-                  <Ionicons name="star" size={12} color={Colors.secondary} />
+                  <Ionicons name='star' size={12} color={Colors.secondary} />
                   <Text style={styles.exploreStatText}>{item.rating}</Text>
                 </View>
                 <View style={styles.exploreStat}>
-                  <Ionicons name="eye" size={12} color={Colors.textMuted} />
+                  <Ionicons name='eye' size={12} color={Colors.textMuted} />
                   <Text style={styles.exploreStatText}>{item.views}</Text>
                 </View>
               </View>
             </View>
-            <Ionicons name="bookmark-outline" size={20} color={Colors.textMuted} />
+            <Ionicons name='bookmark-outline' size={20} color={Colors.textMuted} />
           </Card>
         ))}
 

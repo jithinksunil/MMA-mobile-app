@@ -1,20 +1,23 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import type React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
 import { Colors, Spacing, Typography, Radii, Shadows } from '../theme';
-import { Card, CardHeader, Button } from '../components';
+import { Card, Button } from '../components';
 
 const { width } = Dimensions.get('window');
 
-const QUICK_ACTIONS = [
+const HERO_LABEL_COLOR = 'rgba(255,255,255,0.7)';
+const HERO_SUBTITLE_COLOR = 'rgba(255,255,255,0.75)';
+const HERO_BUTTON_BG = 'rgba(255,255,255,0.2)';
+
+const QUICK_ACTIONS: {
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color: string;
+}[] = [
   { id: '1', icon: 'flash', label: 'Quick Start', color: Colors.primary },
   { id: '2', icon: 'search', label: 'Explore', color: Colors.secondary },
   { id: '3', icon: 'star', label: 'Favorites', color: Colors.info },
@@ -42,7 +45,7 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.username}>Welcome Back!</Text>
           </View>
           <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+            <Ionicons name='notifications-outline' size={24} color={Colors.textPrimary} />
             <View style={styles.notificationDot} />
           </TouchableOpacity>
         </View>
@@ -55,15 +58,10 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.heroSubtitle}>
               This is your cross-platform React Native template.
             </Text>
-            <Button
-              title="Explore Now"
-              onPress={() => {}}
-              size="sm"
-              style={styles.heroButton}
-            />
+            <Button title='Explore Now' onPress={undefined} size='sm' style={styles.heroButton} />
           </View>
           <View style={styles.heroDecoration}>
-            <Ionicons name="rocket" size={80} color="rgba(255,255,255,0.15)" />
+            <Ionicons name='rocket' size={80} color='rgba(255,255,255,0.15)' />
           </View>
         </View>
 
@@ -73,7 +71,7 @@ export const HomeScreen: React.FC = () => {
           {QUICK_ACTIONS.map((action) => (
             <TouchableOpacity key={action.id} style={styles.quickAction} activeOpacity={0.8}>
               <View style={[styles.quickActionIcon, { backgroundColor: action.color + '22' }]}>
-                <Ionicons name={action.icon as any} size={24} color={action.color} />
+                <Ionicons name={action.icon} size={24} color={action.color} />
               </View>
               <Text style={styles.quickActionLabel}>{action.label}</Text>
             </TouchableOpacity>
@@ -89,10 +87,10 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         {RECENT_ITEMS.map((item) => (
-          <Card key={item.id} style={styles.itemCard} onPress={() => {}} elevated>
+          <Card key={item.id} style={styles.itemCard} onPress={undefined} elevated>
             <View style={styles.itemContent}>
               <View style={styles.itemIconContainer}>
-                <Ionicons name="document-text" size={22} color={Colors.primary} />
+                <Ionicons name='document-text' size={22} color={Colors.primary} />
               </View>
               <View style={styles.itemText}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
@@ -103,7 +101,7 @@ export const HomeScreen: React.FC = () => {
                   <Text style={styles.badgeText}>{item.badge}</Text>
                 </View>
               )}
-              <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+              <Ionicons name='chevron-forward' size={18} color={Colors.textMuted} />
             </View>
           </Card>
         ))}
@@ -111,17 +109,19 @@ export const HomeScreen: React.FC = () => {
         {/* Stats Row */}
         <Text style={styles.sectionTitle}>Stats Overview</Text>
         <View style={styles.statsRow}>
-          {[
-            { label: 'Total', value: '128', icon: 'layers' },
-            { label: 'Active', value: '42', icon: 'pulse' },
-            { label: 'Done', value: '86', icon: 'checkmark-circle' },
-          ].map((stat) => (
-            <Card key={stat.label} style={styles.statCard}>
-              <Ionicons name={stat.icon as any} size={20} color={Colors.primary} />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </Card>
-          ))}
+          {([] as { label: string; value: string; icon: keyof typeof Ionicons.glyphMap }[])
+            .concat([
+              { label: 'Total', value: '128', icon: 'layers' },
+              { label: 'Active', value: '42', icon: 'pulse' },
+              { label: 'Done', value: '86', icon: 'checkmark-circle' },
+            ])
+            .map((stat) => (
+              <Card key={stat.label} style={styles.statCard}>
+                <Ionicons name={stat.icon} size={20} color={Colors.primary} />
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </Card>
+            ))}
         </View>
 
         <View style={styles.bottomPadding} />
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   heroLabel: {
     fontSize: Typography.xs,
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.7)',
+    color: HERO_LABEL_COLOR,
     letterSpacing: 1.5,
     marginBottom: Spacing.xs,
   },
@@ -206,13 +206,13 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: Typography.sm,
-    color: 'rgba(255,255,255,0.75)',
+    color: HERO_SUBTITLE_COLOR,
     marginBottom: Spacing.md,
     lineHeight: Typography.lineHeightBase,
   },
   heroButton: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: HERO_BUTTON_BG,
   },
   heroDecoration: {
     justifyContent: 'center',

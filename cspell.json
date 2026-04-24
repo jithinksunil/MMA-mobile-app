@@ -1,0 +1,6 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": ["fightingapp", "Pressable", "subcomponent", "MMKV", "chatbubble"],
+  "ignorePaths": ["node_modules", ".expo", "ios", "android", "dist"]
+}

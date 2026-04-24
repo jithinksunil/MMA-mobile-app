@@ -24,17 +24,14 @@ export const delay = (ms: number): Promise<void> =>
 /**
  * Returns a random element from an array.
  */
-export const randomItem = <T>(arr: T[]): T =>
-  arr[Math.floor(Math.random() * arr.length)];
+export const randomItem = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 /**
  * Capitalizes the first letter of a string.
  */
-export const capitalize = (str: string): string =>
-  str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalize = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
 /**
  * Simple email validation.
  */
-export const isValidEmail = (email: string): boolean =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+export const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

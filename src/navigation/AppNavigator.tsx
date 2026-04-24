@@ -3,31 +3,32 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 
-import { Colors, Radii, Spacing } from '../theme';
+import { Colors, Spacing } from '../theme';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ExploreScreen } from '../screens/ExploreScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
-import { BottomTabParamList, RootStackParamList } from '../types';
+import { type BottomTabParamList, type RootStackParamList } from '../types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 64;
+const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 72;
 
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           backgroundColor: Colors.surface,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
           height: TAB_BAR_HEIGHT,
-          paddingBottom: Platform.OS === 'ios' ? Spacing.lg : Spacing.sm,
+          paddingBottom: Platform.OS === 'ios' ? Spacing.lg : 10,
           paddingTop: Spacing.sm,
           elevation: 20,
           shadowColor: '#000',
@@ -37,6 +38,9 @@ function MainTabs() {
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textMuted,
+        tabBarActiveBackgroundColor: 'transparent',
+        tabBarInactiveBackgroundColor: 'transparent',
+        tabBarItemStyle: { backgroundColor: 'transparent' },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -49,48 +53,29 @@ function MainTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'ExploreTab') {
             iconName = focused ? 'compass' : 'compass-outline';
-          } else if (route.name === 'FavoritesTab') {
-            iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'ProfileTab') {
+            iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'SettingsTab') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
-          return (
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...(focused && {
-                  backgroundColor: Colors.primary + '20',
-                  borderRadius: Radii.sm,
-                  paddingHorizontal: Spacing.md,
-                  paddingVertical: 4,
-                }),
-              }}
-            >
-              <Ionicons name={iconName} size={focused ? 22 : 22} color={color} />
-            </View>
-          );
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
     >
+      <Tab.Screen name='HomeTab' component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
       <Tab.Screen
-        name="HomeTab"
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
-      />
-      <Tab.Screen
-        name="ExploreTab"
+        name='ExploreTab'
         component={ExploreScreen}
         options={{ tabBarLabel: 'Explore' }}
       />
       <Tab.Screen
-        name="FavoritesTab"
+        name='ProfileTab'
         component={ProfileScreen}
         options={{ tabBarLabel: 'Profile' }}
       />
       <Tab.Screen
-        name="ProfileTab"
+        name='SettingsTab'
         component={SettingsScreen}
         options={{ tabBarLabel: 'Settings' }}
       />
@@ -108,7 +93,7 @@ export function AppNavigator() {
           animation: 'slide_from_right',
         }}
       >
-        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name='Main' component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

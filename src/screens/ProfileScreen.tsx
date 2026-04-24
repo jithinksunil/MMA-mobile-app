@@ -1,13 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
 import { Colors, Spacing, Typography, Radii, Shadows } from '../theme';
 import { Card, Button } from '../components';
 
@@ -29,7 +24,7 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
           <TouchableOpacity style={styles.editBtn}>
-            <Ionicons name="create-outline" size={22} color={Colors.textPrimary} />
+            <Ionicons name='create-outline' size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -37,10 +32,10 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={52} color={Colors.primary} />
+              <Ionicons name='person' size={52} color={Colors.primary} />
             </View>
             <View style={styles.avatarBadge}>
-              <Ionicons name="checkmark" size={10} color={Colors.textPrimary} />
+              <Ionicons name='checkmark' size={10} color={Colors.textPrimary} />
             </View>
           </View>
 
@@ -58,26 +53,19 @@ export const ProfileScreen: React.FC = () => {
                   <Text style={styles.statValue}>{stat.value}</Text>
                   <Text style={styles.statLabel}>{stat.label}</Text>
                 </View>
-                {index < PROFILE_STATS.length - 1 && (
-                  <View style={styles.statDivider} />
-                )}
+                {index < PROFILE_STATS.length - 1 && <View style={styles.statDivider} />}
               </React.Fragment>
             ))}
           </View>
 
           {/* Actions */}
           <View style={styles.actionsRow}>
+            <Button title='Edit Profile' onPress={undefined} size='sm' style={styles.actionBtn} />
             <Button
-              title="Edit Profile"
-              onPress={() => {}}
-              size="sm"
-              style={styles.actionBtn}
-            />
-            <Button
-              title="Share"
-              onPress={() => {}}
-              variant="outline"
-              size="sm"
+              title='Share'
+              onPress={undefined}
+              variant='outline'
+              size='sm'
               style={styles.actionBtn}
             />
           </View>
@@ -103,19 +91,21 @@ export const ProfileScreen: React.FC = () => {
         <Text style={styles.sectionTitle}>Achievements</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.achievementsRow}>
-            {[
-              { icon: 'trophy', label: 'First Win', color: Colors.secondary },
-              { icon: 'flame', label: 'On Fire', color: Colors.primary },
-              { icon: 'star', label: 'Top User', color: Colors.info },
-              { icon: 'diamond', label: 'Premium', color: Colors.success },
-            ].map((badge) => (
-              <View key={badge.label} style={styles.achievementBadge}>
-                <View style={[styles.achievementIcon, { backgroundColor: badge.color + '22' }]}>
-                  <Ionicons name={badge.icon as any} size={26} color={badge.color} />
+            {([] as { icon: keyof typeof Ionicons.glyphMap; label: string; color: string }[])
+              .concat([
+                { icon: 'trophy', label: 'First Win', color: Colors.secondary },
+                { icon: 'flame', label: 'On Fire', color: Colors.primary },
+                { icon: 'star', label: 'Top User', color: Colors.info },
+                { icon: 'diamond', label: 'Premium', color: Colors.success },
+              ])
+              .map((badge) => (
+                <View key={badge.label} style={styles.achievementBadge}>
+                  <View style={[styles.achievementIcon, { backgroundColor: badge.color + '22' }]}>
+                    <Ionicons name={badge.icon} size={26} color={badge.color} />
+                  </View>
+                  <Text style={styles.achievementLabel}>{badge.label}</Text>
                 </View>
-                <Text style={styles.achievementLabel}>{badge.label}</Text>
-              </View>
-            ))}
+              ))}
           </View>
         </ScrollView>
 
