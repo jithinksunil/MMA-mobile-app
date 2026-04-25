@@ -41,6 +41,8 @@ export const CURRICULUM: Phase[] = [
                 title: 'Jab and Cross',
                 videoUrl:
                   'https://res.cloudinary.com/df8w69xon/video/upload/v1777106097/How_to_Throw_the_Perfect_Jab_in_Boxing_fbl6yt.mp4',
+                duration: '3min',
+                rounds: 8,
                 description:
                   'The jab and cross are the two most fundamental punches in combat sports. The jab sets up attacks and controls distance, while the cross delivers maximum power from the rear hand.',
                 instructions: [

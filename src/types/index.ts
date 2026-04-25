@@ -16,6 +16,8 @@ export type RootStackParamList = {
     exerciseTitle: string;
     description?: string;
     instructions?: string[];
+    duration?: string;
+    rounds?: number;
   };
 };
 
@@ -57,6 +59,8 @@ export interface Exercise {
   videoUrl: string;
   description?: string;
   instructions?: string[];
+  duration?: string;
+  rounds?: number;
 }
 
 export interface Section {

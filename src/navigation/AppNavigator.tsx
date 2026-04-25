@@ -19,6 +19,7 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 72;
+const LOCKED_TAB_NAMES = new Set<keyof BottomTabParamList>(['ExploreTab', 'SettingsTab']);
 
 function MainTabs() {
   return (
@@ -44,6 +45,17 @@ function MainTabs() {
         tabBarActiveBackgroundColor: 'transparent',
         tabBarInactiveBackgroundColor: 'transparent',
         tabBarItemStyle: { backgroundColor: 'transparent' },
+        tabBarBadge: LOCKED_TAB_NAMES.has(route.name) ? 'Locked' : undefined,
+        tabBarBadgeStyle: {
+          backgroundColor: Colors.primary,
+          color: Colors.textPrimary,
+          fontSize: 9,
+          fontWeight: '700',
+          paddingHorizontal: Spacing.xs,
+          minWidth: 44,
+          height: 18,
+          lineHeight: 18,
+        },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -63,6 +75,13 @@ function MainTabs() {
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+      screenListeners={({ route }) => ({
+        tabPress: (event) => {
+          if (LOCKED_TAB_NAMES.has(route.name)) {
+            event.preventDefault();
+          }
         },
       })}
     >

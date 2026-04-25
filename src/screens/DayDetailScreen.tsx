@@ -28,9 +28,15 @@ const ExerciseRow: React.FC<ExerciseRowProps> = ({ exercise, onPress }) => (
       </View>
       <View style={styles.exerciseInfo}>
         <Text style={styles.exerciseName}>{exercise.title}</Text>
-        <Text style={styles.exerciseHint}>
-          {exercise.videoUrl ? 'Tap to watch' : 'Coming soon'}
-        </Text>
+        {exercise.duration && exercise.rounds ? (
+          <Text style={styles.exerciseMeta}>
+            {exercise.duration} x {exercise.rounds} rounds
+          </Text>
+        ) : (
+          <Text style={styles.exerciseHint}>
+            {exercise.videoUrl ? 'Tap to watch' : 'Coming soon'}
+          </Text>
+        )}
       </View>
       {Boolean(exercise.videoUrl) && (
         <Ionicons name='chevron-forward' size={16} color={Colors.textMuted} />
@@ -76,6 +82,8 @@ export const DayDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       exerciseTitle: exercise.title,
       description: exercise.description,
       instructions: exercise.instructions,
+      duration: exercise.duration,
+      rounds: exercise.rounds,
     });
   };
 
@@ -199,6 +207,12 @@ const styles = StyleSheet.create({
   exerciseHint: {
     fontSize: Typography.xs,
     color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  exerciseMeta: {
+    fontSize: Typography.xs,
+    fontWeight: '600',
+    color: Colors.primary,
     marginTop: 2,
   },
   errorText: {

@@ -45,7 +45,7 @@ function buildVideoHtml(videoUrl: string): string {
 }
 
 export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { videoUrl, exerciseTitle, description, instructions } = route.params;
+  const { videoUrl, exerciseTitle, description, instructions, duration, rounds } = route.params;
 
   const renderPlayer = () => {
     if (Platform.OS === 'web') {
@@ -89,6 +89,11 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View style={styles.infoContainer}>
           <Text style={styles.exerciseTitle}>{exerciseTitle}</Text>
+          {Boolean(duration) && Boolean(rounds) && (
+            <Text style={styles.exerciseMeta}>
+              {duration} x {rounds} rounds
+            </Text>
+          )}
           <View style={styles.divider} />
           {Boolean(description) && <Text style={styles.description}>{description}</Text>}
           {instructions && instructions.length > 0 && (
@@ -162,6 +167,12 @@ const styles = StyleSheet.create({
     fontSize: Typography.xl,
     fontWeight: '800',
     color: Colors.textPrimary,
+  },
+  exerciseMeta: {
+    fontSize: Typography.sm,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginTop: Spacing.xs,
   },
   divider: {
     height: 1,
