@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 
 import { useProgressContext } from '../context/ProgressContext';
@@ -81,6 +82,8 @@ function buildVideoHtml(videoUrl: string): string {
 }
 
 export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
+  usePreventScreenCapture('video-player');
+
   const { getExerciseStatus, recordExercisePlayback } = useProgressContext();
   const { videoUrl, exerciseTitle, description, instructions, duration, rounds, exerciseId } =
     route.params;
