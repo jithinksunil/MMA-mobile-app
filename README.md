@@ -15,24 +15,70 @@ A production-ready React Native template built with **Expo** for building cross-
 ### Install dependencies
 
 ```bash
-npm install
+bun install
 ```
 
 ### Run the app
 
+#### Expo Go (physical device — scan QR code)
+
 ```bash
-# Start Expo dev server (scan QR with Expo Go)
-npm start
-
-# Run on Android
-npm run android
-
-# Run on iOS
-npm run ios
-
-# Run in browser (web)
-npm run web
+bun run start
 ```
+
+Opens the Expo dev server. Scan the QR code with the **Expo Go** app (iOS / Android) to launch instantly on your device.
+
+#### Web (browser)
+
+```bash
+bun run web
+```
+
+Opens the app in your default browser via Expo's web support.
+
+#### iOS Simulator (macOS + Xcode required)
+
+```bash
+bun run ios
+```
+
+Builds and launches the app in the iOS Simulator. Make sure Xcode and its Command Line Tools are installed.
+
+To target a specific simulator:
+
+```bash
+bunx expo run:ios --device "iPhone 16 Pro"
+```
+
+#### Android Emulator (Android Studio required)
+
+```bash
+bun run android
+```
+
+Builds and launches the app in an Android Virtual Device (AVD). Make sure Android Studio is installed and an AVD is running before executing this command.
+
+To target a specific device or emulator:
+
+```bash
+bunx expo run:android --device
+```
+
+#### Physical Android device (USB)
+
+Enable **Developer Options** and **USB Debugging** on your device, connect via USB, then run:
+
+```bash
+bunx expo run:android --device
+```
+
+#### Tunnel mode (useful behind firewalls / NAT)
+
+```bash
+bun run start --tunnel
+```
+
+Exposes the dev server through a public URL so any device on any network can connect.
 
 ---
 

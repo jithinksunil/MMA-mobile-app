@@ -54,6 +54,8 @@ Use these instead of long relative paths:
 
 ## Linting (flat config: `eslint.config.mjs`)
 
+These are agent-level rules: every coding agent working in this repo must follow them before writing or changing code.
+
 Notable rules to respect up front:
 
 - no `any`
@@ -61,6 +63,7 @@ Notable rules to respect up front:
 - strict naming conventions
 - import ordering
 - cognitive complexity warnings — keep functions focused
+- no direct `process.env` reads outside `src/config/env.ts`
 
 Run `bun run lint:fix` to auto-fix before finishing.
 
