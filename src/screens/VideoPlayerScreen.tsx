@@ -45,7 +45,7 @@ function buildVideoHtml(videoUrl: string): string {
 }
 
 export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { videoUrl, exerciseTitle } = route.params;
+  const { videoUrl, exerciseTitle, description, instructions } = route.params;
 
   const renderPlayer = () => {
     if (Platform.OS === 'web') {
@@ -90,6 +90,18 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.infoContainer}>
           <Text style={styles.exerciseTitle}>{exerciseTitle}</Text>
           <View style={styles.divider} />
+          {Boolean(description) && <Text style={styles.description}>{description}</Text>}
+          {instructions && instructions.length > 0 && (
+            <View style={styles.instructionsContainer}>
+              <Text style={styles.instructionsHeading}>Instructions</Text>
+              {instructions.map((step, index) => (
+                <View key={index} style={styles.instructionRow}>
+                  <Text style={styles.stepNumber}>{index + 1}</Text>
+                  <Text style={styles.stepText}>{step}</Text>
+                </View>
+              ))}
+            </View>
+          )}
           <View style={styles.attribution}>
             <Ionicons name='videocam' size={16} color={Colors.textMuted} />
             <Text style={styles.attributionText}>Direct video stream</Text>
@@ -155,6 +167,44 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.border,
     marginVertical: Spacing.md,
+  },
+  description: {
+    fontSize: Typography.base,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Spacing.md,
+  },
+  instructionsContainer: {
+    marginBottom: Spacing.md,
+  },
+  instructionsHeading: {
+    fontSize: Typography.md,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  instructionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  stepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    fontSize: Typography.xs,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  stepText: {
+    flex: 1,
+    fontSize: Typography.sm,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
   attribution: {
     flexDirection: 'row',

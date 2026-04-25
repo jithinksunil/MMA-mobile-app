@@ -41,7 +41,7 @@ const ExerciseRow: React.FC<ExerciseRowProps> = ({ exercise, onPress }) => (
 
 interface SectionGroupProps {
   section: Section;
-  onExercisePress: (videoUrl: string, exerciseTitle: string) => void;
+  onExercisePress: (exercise: Exercise) => void;
 }
 
 const SectionGroup: React.FC<SectionGroupProps> = ({ section, onExercisePress }) => (
@@ -56,7 +56,7 @@ const SectionGroup: React.FC<SectionGroupProps> = ({ section, onExercisePress })
         key={exercise.id}
         exercise={exercise}
         onPress={() => {
-          onExercisePress(exercise.videoUrl, exercise.title);
+          onExercisePress(exercise);
         }}
       />
     ))}
@@ -67,11 +67,16 @@ export const DayDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { phaseId, dayId } = route.params;
   const day = getDayById(phaseId, dayId);
 
-  const handleExercisePress = (videoUrl: string, exerciseTitle: string) => {
-    if (!videoUrl) {
+  const handleExercisePress = (exercise: Exercise) => {
+    if (!exercise.videoUrl) {
       return;
     }
-    navigation.navigate('VideoPlayer', { videoUrl, exerciseTitle });
+    navigation.navigate('VideoPlayer', {
+      videoUrl: exercise.videoUrl,
+      exerciseTitle: exercise.title,
+      description: exercise.description,
+      instructions: exercise.instructions,
+    });
   };
 
   if (!day) {

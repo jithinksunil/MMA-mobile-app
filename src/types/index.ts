@@ -11,7 +11,12 @@ export type RootStackParamList = {
   Register: undefined;
   PhaseDetail: { phaseId: string };
   DayDetail: { phaseId: string; dayId: string };
-  VideoPlayer: { videoUrl: string; exerciseTitle: string };
+  VideoPlayer: {
+    videoUrl: string;
+    exerciseTitle: string;
+    description?: string;
+    instructions?: string[];
+  };
 };
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -50,6 +55,8 @@ export interface Exercise {
   id: string;
   title: string;
   videoUrl: string;
+  description?: string;
+  instructions?: string[];
 }
 
 export interface Section {

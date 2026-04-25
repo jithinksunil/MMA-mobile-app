@@ -37,10 +37,19 @@ export const CURRICULUM: Phase[] = [
             title: 'Warmup',
             exercises: [
               {
-                id: 'phase-1-day-mon-warmup-torso',
-                title: 'Torso',
+                id: 'phase-1-day-mon-warmup-jab-and-cross',
+                title: 'Jab and Cross',
                 videoUrl:
                   'https://res.cloudinary.com/df8w69xon/video/upload/v1777106097/How_to_Throw_the_Perfect_Jab_in_Boxing_fbl6yt.mp4',
+                description:
+                  'The jab and cross are the two most fundamental punches in combat sports. The jab sets up attacks and controls distance, while the cross delivers maximum power from the rear hand.',
+                instructions: [
+                  'Start in your fighting stance: feet shoulder-width apart, dominant foot back, hands up by your chin.',
+                  'Jab — extend your lead hand straight out, rotating your fist so the palm faces down at full extension. Snap it back immediately.',
+                  'Cross — pivot on your rear foot, rotate your hips and shoulders, and drive your rear hand straight forward. Rotate the fist palm-down at the end.',
+                  'Combine them into a 1-2: throw the jab first to close distance, then follow immediately with the cross for power.',
+                  'Keep your chin tucked and your non-punching hand protecting your face throughout.',
+                ],
               },
             ],
           },
