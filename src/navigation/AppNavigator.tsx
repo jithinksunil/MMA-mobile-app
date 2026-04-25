@@ -10,6 +10,9 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { ExploreScreen } from '../screens/ExploreScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { PhaseDetailScreen } from '../screens/PhaseDetailScreen';
+import { DayDetailScreen } from '../screens/DayDetailScreen';
+import { VideoPlayerScreen } from '../screens/VideoPlayerScreen';
 import { type BottomTabParamList, type RootStackParamList } from '../types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -94,6 +97,13 @@ export function AppNavigator() {
         }}
       >
         <Stack.Screen name='Main' component={MainTabs} />
+        <Stack.Screen name='PhaseDetail' component={PhaseDetailScreen} />
+        <Stack.Screen name='DayDetail' component={DayDetailScreen} />
+        <Stack.Screen
+          name='VideoPlayer'
+          component={VideoPlayerScreen}
+          options={{ animation: 'slide_from_bottom' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

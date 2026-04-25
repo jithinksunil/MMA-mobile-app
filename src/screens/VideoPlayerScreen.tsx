@@ -1,0 +1,171 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { type NativeStackScreenProps } from '@react-navigation/native-stack';
+import WebView from 'react-native-webview';
+
+import { Colors, Spacing, Typography } from '../theme';
+import { type RootStackParamList } from '../types';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'VideoPlayer'>;
+
+const { width } = Dimensions.get('window');
+const PLAYER_HEIGHT = Math.round(width * (9 / 16));
+
+function buildVideoHtml(videoUrl: string): string {
+  return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { background: #0A0A0F; width: 100%; height: 100%; overflow: hidden; }
+      video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    </style>
+  </head>
+  <body>
+    <video
+      src="${videoUrl}"
+      controls
+      playsinline
+      webkit-playsinline
+      preload="auto"
+    ></video>
+  </body>
+</html>`;
+}
+
+export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { videoUrl, exerciseTitle } = route.params;
+
+  const renderPlayer = () => {
+    if (Platform.OS === 'web') {
+      return React.createElement('video', {
+        src: videoUrl,
+        controls: true,
+        playsInline: true,
+        style: {
+          width: '100%',
+          height: PLAYER_HEIGHT,
+          backgroundColor: Colors.surface,
+          display: 'block',
+          objectFit: 'contain',
+        },
+      });
+    }
+    return (
+      <WebView
+        source={{ html: buildVideoHtml(videoUrl) }}
+        style={styles.webView}
+        javaScriptEnabled
+        allowsFullscreenVideo
+        mediaPlaybackRequiresUserAction={false}
+        originWhitelist={['*']}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name='arrow-back' size={24} color={Colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Video Player</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.playerContainer}>{renderPlayer()}</View>
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.exerciseTitle}>{exerciseTitle}</Text>
+          <View style={styles.divider} />
+          <View style={styles.attribution}>
+            <Ionicons name='videocam' size={16} color={Colors.textMuted} />
+            <Text style={styles.attributionText}>Direct video stream</Text>
+          </View>
+        </View>
+
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: Typography.base,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  scroll: {
+    flex: 1,
+  },
+  playerContainer: {
+    width: '100%',
+    height: PLAYER_HEIGHT,
+    backgroundColor: Colors.surface,
+    overflow: 'hidden',
+  },
+  webView: {
+    width: '100%',
+    height: PLAYER_HEIGHT,
+  },
+  infoContainer: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+  },
+  exerciseTitle: {
+    fontSize: Typography.xl,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginVertical: Spacing.md,
+  },
+  attribution: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  attributionText: {
+    fontSize: Typography.xs,
+    color: Colors.textSecondary,
+  },
+  bottomPadding: {
+    height: Spacing.xl,
+  },
+});

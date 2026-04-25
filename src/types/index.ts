@@ -9,6 +9,9 @@ export type RootStackParamList = {
   Auth: undefined;
   Login: undefined;
   Register: undefined;
+  PhaseDetail: { phaseId: string };
+  DayDetail: { phaseId: string; dayId: string };
+  VideoPlayer: { videoUrl: string; exerciseTitle: string };
 };
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -40,4 +43,30 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   hasMore: boolean;
+}
+
+// Curriculum types
+export interface Exercise {
+  id: string;
+  title: string;
+  videoUrl: string;
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  exercises: Exercise[];
+}
+
+export interface TrainingDay {
+  id: string;
+  dayName: string;
+  sections: Section[];
+}
+
+export interface Phase {
+  id: string;
+  title: string;
+  weekRange: string;
+  days: TrainingDay[];
 }

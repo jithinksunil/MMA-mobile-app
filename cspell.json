@@ -1,6 +1,19 @@
 {
   "version": "0.2",
   "language": "en",
-  "words": ["fightingapp", "Pressable", "subcomponent", "MMKV", "chatbubble", "bunx"],
+  "words": [
+    "fightingapp",
+    "Pressable",
+    "subcomponent",
+    "MMKV",
+    "chatbubble",
+    "bunx",
+    "playsinline",
+    "modestbranding",
+    "allowfullscreen",
+    "videocam",
+    "Cooldown",
+    "cooldown"
+  ],
   "ignorePaths": ["node_modules", ".expo", "ios", "android", "dist"]
 }

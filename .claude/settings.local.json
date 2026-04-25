@@ -1,8 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(bun run *)",
-      "Bash(npx eslint *)"
-    ]
+    "allow": ["Bash(bun run *)", "Bash(npx eslint *)", "Bash(bunx expo *)"]
   }
 }
