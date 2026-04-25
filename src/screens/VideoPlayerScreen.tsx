@@ -22,6 +22,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'VideoPlayer'>;
 
 const { width } = Dimensions.get('window');
 const PLAYER_HEIGHT = Math.round(width * (9 / 16));
+const VIDEO_WATERMARK_LINES = ['Copyright protected', 'Valley MMA'];
 
 interface PlaybackMessage {
   type: 'played' | 'progress';
@@ -165,7 +166,21 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.playerContainer}>{renderPlayer()}</View>
+        <View style={styles.playerContainer}>
+          {renderPlayer()}
+          <Text
+            style={styles.watermark}
+            pointerEvents='none'
+            accessibilityElementsHidden
+            importantForAccessibility='no-hide-descendants'
+          >
+            {VIDEO_WATERMARK_LINES.map((watermarkLine) => (
+              <Text key={watermarkLine} style={styles.watermarkLine}>
+                {watermarkLine}
+              </Text>
+            ))}
+          </Text>
+        </View>
 
         <View style={styles.infoContainer}>
           <Text style={styles.exerciseTitle}>{exerciseTitle}</Text>
@@ -255,10 +270,28 @@ const styles = StyleSheet.create({
     height: PLAYER_HEIGHT,
     backgroundColor: Colors.surface,
     overflow: 'hidden',
+    position: 'relative',
   },
   webView: {
     width: '100%',
     height: PLAYER_HEIGHT,
+  },
+  watermark: {
+    position: 'absolute',
+    right: Spacing.md,
+    bottom: Spacing.sm,
+    color: Colors.textPrimary,
+    opacity: 0.5,
+    textAlign: 'right',
+    textTransform: 'uppercase',
+  },
+  watermarkLine: {
+    color: Colors.textPrimary,
+    fontSize: Typography.xs,
+    fontWeight: '800',
+    lineHeight: Typography.lineHeightSm,
+    textAlign: 'right',
+    textTransform: 'uppercase',
   },
   infoContainer: {
     paddingHorizontal: Spacing.md,
