@@ -25,6 +25,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
+      "name": "Valley MMA",
       "output": "single",
       "bundler": "metro"
     }
