@@ -55,11 +55,12 @@ export interface PaginatedResponse<T> {
 
 // Progress tracking types
 export type DayStatus = 'locked' | 'active' | 'completed';
-export type ExerciseStatus = 'pending' | 'completed';
+export type ExerciseStatus = 'notWatched' | 'partiallyWatched' | 'completed';
 
 export interface StoredProgress {
   completedDays: string[];
   completedExercises: string[];
+  partiallyWatchedExercises: string[];
 }
 
 export interface ProgressStats {

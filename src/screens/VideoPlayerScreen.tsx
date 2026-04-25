@@ -11,9 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
-import WebView from 'react-native-webview';
+import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 
-import { Button } from '../components';
 import { useProgressContext } from '../context/ProgressContext';
 import { Colors, Spacing, Typography } from '../theme';
 import { type RootStackParamList } from '../types';
@@ -22,6 +21,23 @@ type Props = NativeStackScreenProps<RootStackParamList, 'VideoPlayer'>;
 
 const { width } = Dimensions.get('window');
 const PLAYER_HEIGHT = Math.round(width * (9 / 16));
+
+interface PlaybackMessage {
+  type: 'played' | 'progress';
+  currentTime?: number;
+  duration?: number;
+}
+
+function isPlaybackMessage(value: unknown): value is PlaybackMessage {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    (value.type === 'played' || value.type === 'progress') &&
+    (!('currentTime' in value) || typeof value.currentTime === 'number') &&
+    (!('duration' in value) || typeof value.duration === 'number')
+  );
+}
 
 function buildVideoHtml(videoUrl: string): string {
   return `<!DOCTYPE html>
@@ -42,20 +58,67 @@ function buildVideoHtml(videoUrl: string): string {
       webkit-playsinline
       preload="auto"
     ></video>
+    <script>
+      const video = document.querySelector('video');
+      const post = (message) => {
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(JSON.stringify(message));
+        }
+      };
+      video.addEventListener('play', () => {
+        post({ type: 'played' });
+      });
+      video.addEventListener('timeupdate', () => {
+        post({
+          type: 'progress',
+          currentTime: video.currentTime,
+          duration: video.duration,
+        });
+      });
+    </script>
   </body>
 </html>`;
 }
 
 export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { completeExercise, getExerciseStatus } = useProgressContext();
+  const { getExerciseStatus, recordExercisePlayback } = useProgressContext();
   const { videoUrl, exerciseTitle, description, instructions, duration, rounds, exerciseId } =
     route.params;
   const exerciseStatus = exerciseId ? getExerciseStatus(exerciseId) : null;
 
-  const handleCompleteExercise = () => {
+  const handlePlaybackUpdate = (watchedPercent: number) => {
     if (exerciseId) {
-      void completeExercise(exerciseId);
+      void recordExercisePlayback(exerciseId, watchedPercent);
     }
+  };
+
+  const handleNativeMessage = (event: WebViewMessageEvent) => {
+    try {
+      const parsed = JSON.parse(event.nativeEvent.data) as unknown;
+      if (!isPlaybackMessage(parsed)) {
+        return;
+      }
+      const watchedPercent =
+        parsed.type === 'progress' && parsed.duration && Number.isFinite(parsed.duration)
+          ? (parsed.currentTime ?? 0) / parsed.duration
+          : 0;
+      handlePlaybackUpdate(watchedPercent);
+    } catch {
+      // Ignore malformed player messages.
+    }
+  };
+
+  const handleWebPlay = () => {
+    handlePlaybackUpdate(0);
+  };
+
+  const handleWebTimeUpdate = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = event.currentTarget;
+    const watchedPercent =
+      video.duration > 0 && Number.isFinite(video.duration)
+        ? video.currentTime / video.duration
+        : 0;
+    handlePlaybackUpdate(watchedPercent);
   };
 
   const renderPlayer = () => {
@@ -64,6 +127,8 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         src: videoUrl,
         controls: true,
         playsInline: true,
+        onPlay: handleWebPlay,
+        onTimeUpdate: handleWebTimeUpdate,
         style: {
           width: '100%',
           height: PLAYER_HEIGHT,
@@ -81,6 +146,7 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
         allowsFullscreenVideo
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
+        onMessage={handleNativeMessage}
       />
     );
   };
@@ -107,13 +173,25 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
           )}
           <View style={styles.divider} />
           {exerciseId && (
-            <Button
-              title={exerciseStatus === 'completed' ? 'Exercise Completed' : 'Mark Complete'}
-              onPress={handleCompleteExercise}
-              disabled={exerciseStatus === 'completed'}
-              variant={exerciseStatus === 'completed' ? 'outline' : 'primary'}
-              style={styles.completeButton}
-            />
+            <View style={styles.watchStatus}>
+              <Ionicons
+                name={exerciseStatus === 'completed' ? 'checkmark-circle' : 'time-outline'}
+                size={18}
+                color={exerciseStatus === 'completed' ? Colors.success : Colors.warning}
+              />
+              <Text
+                style={[
+                  styles.watchStatusText,
+                  exerciseStatus === 'completed' && styles.watchStatusTextCompleted,
+                ]}
+              >
+                {exerciseStatus === 'completed'
+                  ? 'Watched'
+                  : exerciseStatus === 'partiallyWatched'
+                    ? 'Partially watched'
+                    : 'Not watched'}
+              </Text>
+            </View>
           )}
           {Boolean(description) && <Text style={styles.description}>{description}</Text>}
           {instructions && instructions.length > 0 && (
@@ -199,8 +277,19 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
     marginVertical: Spacing.md,
   },
-  completeButton: {
+  watchStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
     marginBottom: Spacing.md,
+  },
+  watchStatusText: {
+    fontSize: Typography.sm,
+    fontWeight: '700',
+    color: Colors.warning,
+  },
+  watchStatusTextCompleted: {
+    color: Colors.success,
   },
   description: {
     fontSize: Typography.base,

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { Button, Card } from '../components';
+import { Card } from '../components';
 import { useProgressContext } from '../context/ProgressContext';
 import { getDayById } from '../data/curriculum';
 import { Colors, Spacing, Typography, Radii } from '../theme';
@@ -23,6 +23,18 @@ interface ExerciseRowProps {
   onPress: () => void;
 }
 
+function getExerciseStatusLabel(status: ExerciseStatus): string {
+  if (status === 'completed') return 'Watched';
+  if (status === 'partiallyWatched') return 'Partially watched';
+  return 'Not watched';
+}
+
+function getExerciseStatusStyle(status: ExerciseStatus) {
+  if (status === 'completed') return styles.exerciseStatusCompleted;
+  if (status === 'partiallyWatched') return styles.exerciseStatusPartiallyWatched;
+  return styles.exerciseStatusNotWatched;
+}
+
 const ExerciseRow: React.FC<ExerciseRowProps> = ({ exercise, status, onPress }) => (
   <Card style={styles.exerciseRow} onPress={exercise.videoUrl ? onPress : undefined}>
     <View style={styles.exerciseContent}>
@@ -35,10 +47,8 @@ const ExerciseRow: React.FC<ExerciseRowProps> = ({ exercise, status, onPress }) 
       </View>
       <View style={styles.exerciseInfo}>
         <Text style={styles.exerciseName}>{exercise.title}</Text>
-        <Text
-          style={[styles.exerciseStatus, status === 'completed' && styles.exerciseStatusCompleted]}
-        >
-          {status === 'completed' ? 'Completed' : 'Pending'}
+        <Text style={[styles.exerciseStatus, getExerciseStatusStyle(status)]}>
+          {getExerciseStatusLabel(status)}
         </Text>
         {exercise.duration && exercise.rounds ? (
           <Text style={styles.exerciseMeta}>
@@ -89,9 +99,8 @@ const SectionGroup: React.FC<SectionGroupProps> = ({
 
 export const DayDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { phaseId, dayId } = route.params;
-  const { completeDay, getDayStatus, getExerciseStatus } = useProgressContext();
+  const { getExerciseStatus } = useProgressContext();
   const day = getDayById(phaseId, dayId);
-  const dayStatus = getDayStatus(dayId);
 
   const handleExercisePress = (exercise: Exercise) => {
     if (!exercise.videoUrl) {
@@ -106,10 +115,6 @@ export const DayDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       rounds: exercise.rounds,
       exerciseId: exercise.id,
     });
-  };
-
-  const handleCompleteDay = () => {
-    void completeDay(dayId);
   };
 
   if (!day) {
@@ -143,13 +148,6 @@ export const DayDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onExercisePress={handleExercisePress}
           />
         ))}
-        <Button
-          title={dayStatus === 'completed' ? 'Day Completed' : 'Mark Day Complete'}
-          onPress={handleCompleteDay}
-          disabled={dayStatus === 'completed'}
-          variant={dayStatus === 'completed' ? 'outline' : 'primary'}
-          style={styles.completeDayButton}
-        />
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
@@ -257,6 +255,12 @@ const styles = StyleSheet.create({
     color: Colors.warning,
     marginTop: 2,
   },
+  exerciseStatusNotWatched: {
+    color: Colors.textMuted,
+  },
+  exerciseStatusPartiallyWatched: {
+    color: Colors.warning,
+  },
   exerciseStatusCompleted: {
     color: Colors.success,
   },
@@ -268,8 +272,5 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: Spacing.xl,
-  },
-  completeDayButton: {
-    marginTop: Spacing.sm,
   },
 });

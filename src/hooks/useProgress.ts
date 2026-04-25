@@ -12,6 +12,7 @@ const ALL_DAYS: readonly { readonly phaseId: string; readonly dayId: string }[] 
 const INITIAL_PROGRESS: StoredProgress = {
   completedDays: [],
   completedExercises: [],
+  partiallyWatchedExercises: [],
 };
 
 const ALL_EXERCISE_IDS = CURRICULUM.flatMap((phase) =>
@@ -24,8 +25,7 @@ interface UseProgressReturn {
   isLoaded: boolean;
   getDayStatus: (dayId: string) => DayStatus;
   getExerciseStatus: (exerciseId: string) => ExerciseStatus;
-  completeExercise: (exerciseId: string) => Promise<void>;
-  completeDay: (dayId: string) => Promise<void>;
+  recordExercisePlayback: (exerciseId: string, watchedPercent: number) => Promise<void>;
   resetProgress: () => Promise<void>;
   stats: ProgressStats;
 }
@@ -43,11 +43,16 @@ function parseStoredProgress(raw: string): StoredProgress | null {
     'completedDays' in parsed &&
     'completedExercises' in parsed &&
     isStringArray(parsed.completedDays) &&
-    isStringArray(parsed.completedExercises)
+    isStringArray(parsed.completedExercises) &&
+    (!('partiallyWatchedExercises' in parsed) || isStringArray(parsed.partiallyWatchedExercises))
   ) {
     return {
       completedDays: parsed.completedDays,
       completedExercises: parsed.completedExercises,
+      partiallyWatchedExercises:
+        'partiallyWatchedExercises' in parsed && isStringArray(parsed.partiallyWatchedExercises)
+          ? parsed.partiallyWatchedExercises
+          : [],
     };
   }
 
@@ -86,6 +91,11 @@ export function useProgress(): UseProgressReturn {
     [progress.completedExercises],
   );
 
+  const partiallyWatchedExercisesSet = useMemo(
+    () => new Set(progress.partiallyWatchedExercises),
+    [progress.partiallyWatchedExercises],
+  );
+
   const { activeDayId, activePhaseId } = useMemo(() => {
     const entry = ALL_DAYS.find((d) => !completedDaysSet.has(d.dayId));
     return { activeDayId: entry?.dayId ?? null, activePhaseId: entry?.phaseId ?? null };
@@ -101,35 +111,52 @@ export function useProgress(): UseProgressReturn {
   );
 
   const getExerciseStatus = useCallback(
-    (exerciseId: string): ExerciseStatus =>
-      completedExercisesSet.has(exerciseId) ? 'completed' : 'pending',
-    [completedExercisesSet],
-  );
-
-  const completeExercise = useCallback(
-    async (exerciseId: string): Promise<void> => {
-      if (progress.completedExercises.includes(exerciseId)) return;
-      await save({
-        ...progress,
-        completedExercises: [...progress.completedExercises, exerciseId],
-      });
+    (exerciseId: string): ExerciseStatus => {
+      if (completedExercisesSet.has(exerciseId)) return 'completed';
+      if (partiallyWatchedExercisesSet.has(exerciseId)) return 'partiallyWatched';
+      return 'notWatched';
     },
-    [progress, save],
+    [completedExercisesSet, partiallyWatchedExercisesSet],
   );
 
-  const completeDay = useCallback(
-    async (dayId: string): Promise<void> => {
-      if (progress.completedDays.includes(dayId)) return;
-      const entry = ALL_DAYS.find((d) => d.dayId === dayId);
-      const phase = entry ? CURRICULUM.find((p) => p.id === entry.phaseId) : undefined;
-      const day = phase?.days.find((d) => d.id === dayId);
-      const allExerciseIds = day?.sections.flatMap((s) => s.exercises.map((e) => e.id)) ?? [];
-      const newExerciseIds = allExerciseIds.filter(
-        (id) => !progress.completedExercises.includes(id),
-      );
+  const recordExercisePlayback = useCallback(
+    async (exerciseId: string, watchedPercent: number): Promise<void> => {
+      const isCompleted = watchedPercent >= 0.9;
+      const hasCompletedExercise = progress.completedExercises.includes(exerciseId);
+      const hasPartiallyWatchedExercise = progress.partiallyWatchedExercises.includes(exerciseId);
+
+      if (hasCompletedExercise || (!isCompleted && hasPartiallyWatchedExercise)) {
+        return;
+      }
+
+      const completedExercises = isCompleted
+        ? [...progress.completedExercises, exerciseId]
+        : progress.completedExercises;
+      const partiallyWatchedExercises = isCompleted
+        ? progress.partiallyWatchedExercises.filter((id) => id !== exerciseId)
+        : [...progress.partiallyWatchedExercises, exerciseId];
+      const completedExercisesForDayCheck = new Set(completedExercises);
+      const completedDay = CURRICULUM.flatMap((phase) => phase.days).find((day) => {
+        const videoExerciseIds = day.sections.flatMap((section) =>
+          section.exercises
+            .filter((exercise) => Boolean(exercise.videoUrl))
+            .map((exercise) => exercise.id),
+        );
+        return (
+          videoExerciseIds.includes(exerciseId) &&
+          videoExerciseIds.length > 0 &&
+          videoExerciseIds.every((id) => completedExercisesForDayCheck.has(id))
+        );
+      });
+      const completedDays =
+        completedDay && !progress.completedDays.includes(completedDay.id)
+          ? [...progress.completedDays, completedDay.id]
+          : progress.completedDays;
+
       await save({
-        completedDays: [...progress.completedDays, dayId],
-        completedExercises: [...progress.completedExercises, ...newExerciseIds],
+        completedDays,
+        completedExercises,
+        partiallyWatchedExercises,
       });
     },
     [progress, save],
@@ -166,8 +193,7 @@ export function useProgress(): UseProgressReturn {
     isLoaded,
     getDayStatus,
     getExerciseStatus,
-    completeExercise,
-    completeDay,
+    recordExercisePlayback,
     resetProgress,
     stats,
   };
