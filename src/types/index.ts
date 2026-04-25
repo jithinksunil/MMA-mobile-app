@@ -18,6 +18,7 @@ export type RootStackParamList = {
     instructions?: string[];
     duration?: string;
     rounds?: number;
+    exerciseId?: string;
   };
 };
 
@@ -50,6 +51,29 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   hasMore: boolean;
+}
+
+// Progress tracking types
+export type DayStatus = 'locked' | 'active' | 'completed';
+export type ExerciseStatus = 'pending' | 'completed';
+
+export interface StoredProgress {
+  completedDays: string[];
+  completedExercises: string[];
+}
+
+export interface ProgressStats {
+  totalDaysCompleted: number;
+  totalDays: number;
+  totalExercisesCompleted: number;
+  totalExercises: number;
+  activeDayId: string | null;
+  activePhaseId: string | null;
+  activePhaseDaysCompleted: number;
+  activePhaseTotalDays: number;
+  activePhaseTitle: string;
+  activePhaseWeekRange: string;
+  currentStreak: number;
 }
 
 // Curriculum types

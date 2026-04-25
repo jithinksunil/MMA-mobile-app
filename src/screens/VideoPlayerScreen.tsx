@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { type NativeStackScreenProps } from '@react-navigation/native-stack';
 import WebView from 'react-native-webview';
 
+import { Button } from '../components';
+import { useProgressContext } from '../context/ProgressContext';
 import { Colors, Spacing, Typography } from '../theme';
 import { type RootStackParamList } from '../types';
 
@@ -45,7 +47,16 @@ function buildVideoHtml(videoUrl: string): string {
 }
 
 export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { videoUrl, exerciseTitle, description, instructions, duration, rounds } = route.params;
+  const { completeExercise, getExerciseStatus } = useProgressContext();
+  const { videoUrl, exerciseTitle, description, instructions, duration, rounds, exerciseId } =
+    route.params;
+  const exerciseStatus = exerciseId ? getExerciseStatus(exerciseId) : null;
+
+  const handleCompleteExercise = () => {
+    if (exerciseId) {
+      void completeExercise(exerciseId);
+    }
+  };
 
   const renderPlayer = () => {
     if (Platform.OS === 'web') {
@@ -95,6 +106,15 @@ export const VideoPlayerScreen: React.FC<Props> = ({ route, navigation }) => {
             </Text>
           )}
           <View style={styles.divider} />
+          {exerciseId && (
+            <Button
+              title={exerciseStatus === 'completed' ? 'Exercise Completed' : 'Mark Complete'}
+              onPress={handleCompleteExercise}
+              disabled={exerciseStatus === 'completed'}
+              variant={exerciseStatus === 'completed' ? 'outline' : 'primary'}
+              style={styles.completeButton}
+            />
+          )}
           {Boolean(description) && <Text style={styles.description}>{description}</Text>}
           {instructions && instructions.length > 0 && (
             <View style={styles.instructionsContainer}>
@@ -178,6 +198,9 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.border,
     marginVertical: Spacing.md,
+  },
+  completeButton: {
+    marginBottom: Spacing.md,
   },
   description: {
     fontSize: Typography.base,

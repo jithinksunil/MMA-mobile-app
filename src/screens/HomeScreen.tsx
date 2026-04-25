@@ -5,71 +5,125 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useProgressContext } from '../context/ProgressContext';
+import { CURRICULUM } from '../data/curriculum';
 import { Colors, Spacing, Typography, Radii, Shadows } from '../theme';
 import { Card } from '../components';
-import { CURRICULUM } from '../data/curriculum';
 import { type RootStackParamList, type Phase } from '../types';
 
 const HERO_LABEL_COLOR = 'rgba(255,255,255,0.7)';
 const HERO_SUBTITLE_COLOR = 'rgba(255,255,255,0.75)';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
+type PhaseStatus = 'completed' | 'active' | 'locked';
 
 interface PhaseCardProps {
   phase: Phase;
   index: number;
-  isActive: boolean;
+  status: PhaseStatus;
+  daysCompleted: number;
   onPress: () => void;
 }
 
-const PhaseCard: React.FC<PhaseCardProps> = ({ phase, index, isActive, onPress }) => (
-  <Card style={styles.phaseCard} onPress={isActive ? onPress : undefined} elevated={isActive}>
-    <View style={styles.phaseCardHeader}>
-      <View style={styles.phaseNumberCircle}>
-        <Text style={styles.phaseNumber}>{index + 1}</Text>
-      </View>
-      <View style={styles.phaseMeta}>
-        <Text style={styles.phaseTitle}>{phase.title}</Text>
-        <Text style={styles.phaseWeekRange}>{phase.weekRange}</Text>
-      </View>
-      <View
-        style={[styles.phaseBadge, isActive ? styles.phaseBadgeActive : styles.phaseBadgeLocked]}
-      >
-        {!isActive && (
-          <Ionicons
-            name='lock-closed'
-            size={10}
-            color={Colors.textMuted}
-            style={styles.badgeLockIcon}
-          />
-        )}
-        <Text
+const PhaseCard: React.FC<PhaseCardProps> = ({ phase, index, status, daysCompleted, onPress }) => {
+  const isNavigable = status !== 'locked';
+  const progressPercent = phase.days.length > 0 ? daysCompleted / phase.days.length : 0;
+
+  return (
+    <Card
+      style={styles.phaseCard}
+      onPress={isNavigable ? onPress : undefined}
+      elevated={isNavigable}
+    >
+      <View style={styles.phaseCardHeader}>
+        <View
           style={[
-            styles.phaseBadgeText,
-            isActive ? styles.phaseBadgeTextActive : styles.phaseBadgeTextLocked,
+            styles.phaseNumberCircle,
+            status === 'completed' && styles.phaseNumberCircleCompleted,
           ]}
         >
-          {isActive ? 'ACTIVE' : 'LOCKED'}
-        </Text>
+          {status === 'completed' ? (
+            <Ionicons name='checkmark' size={22} color={Colors.success} />
+          ) : (
+            <Text style={styles.phaseNumber}>{index + 1}</Text>
+          )}
+        </View>
+        <View style={styles.phaseMeta}>
+          <Text style={styles.phaseTitle}>{phase.title}</Text>
+          <Text style={styles.phaseWeekRange}>{phase.weekRange}</Text>
+        </View>
+        <View
+          style={[
+            styles.phaseBadge,
+            status === 'active' && styles.phaseBadgeActive,
+            status === 'completed' && styles.phaseBadgeCompleted,
+            status === 'locked' && styles.phaseBadgeLocked,
+          ]}
+        >
+          {status === 'locked' && (
+            <Ionicons
+              name='lock-closed'
+              size={10}
+              color={Colors.textMuted}
+              style={styles.badgeLockIcon}
+            />
+          )}
+          {status === 'completed' && (
+            <Ionicons
+              name='checkmark'
+              size={10}
+              color={Colors.success}
+              style={styles.badgeLockIcon}
+            />
+          )}
+          <Text
+            style={[
+              styles.phaseBadgeText,
+              status === 'active' && styles.phaseBadgeTextActive,
+              status === 'completed' && styles.phaseBadgeTextCompleted,
+              status === 'locked' && styles.phaseBadgeTextLocked,
+            ]}
+          >
+            {status === 'active' ? 'ACTIVE' : status === 'completed' ? 'DONE' : 'LOCKED'}
+          </Text>
+        </View>
       </View>
-    </View>
-    {isActive && (
-      <>
-        <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
-        </View>
-        <Text style={styles.progressLabel}>Week 1 of 3</Text>
+      {status === 'active' && (
+        <>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progressPercent * 100}%` }]} />
+          </View>
+          <View style={styles.phaseCardFooter}>
+            <Text style={styles.daysLabel}>
+              {daysCompleted} of {phase.days.length} sessions complete
+            </Text>
+            <Ionicons name='chevron-forward' size={16} color={Colors.primary} />
+          </View>
+        </>
+      )}
+      {status === 'completed' && (
         <View style={styles.phaseCardFooter}>
-          <Text style={styles.daysLabel}>{phase.days.length} training days</Text>
-          <Ionicons name='chevron-forward' size={16} color={Colors.primary} />
+          <Text style={styles.daysLabel}>{phase.days.length} sessions complete</Text>
+          <Ionicons name='chevron-forward' size={16} color={Colors.textMuted} />
         </View>
-      </>
-    )}
-  </Card>
-);
+      )}
+    </Card>
+  );
+};
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavProp>();
+  const { getDayStatus } = useProgressContext();
+
+  const getPhaseStatus = (phase: Phase): PhaseStatus => {
+    const statuses = phase.days.map((d) => getDayStatus(d.id));
+    if (statuses.every((s) => s === 'completed')) return 'completed';
+    if (statuses.some((s) => s === 'active')) return 'active';
+    return 'locked';
+  };
+
+  const getPhaseDaysCompleted = (phase: Phase): number =>
+    phase.days.filter((d) => getDayStatus(d.id) === 'completed').length;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -103,17 +157,21 @@ export const HomeScreen: React.FC = () => {
         </View>
 
         <Text style={styles.sectionTitle}>Training Phases</Text>
-        {CURRICULUM.map((phase, index) => (
-          <PhaseCard
-            key={phase.id}
-            phase={phase}
-            index={index}
-            isActive={phase.id === 'phase-1'}
-            onPress={() => {
-              navigation.navigate('PhaseDetail', { phaseId: phase.id });
-            }}
-          />
-        ))}
+        {CURRICULUM.map((phase, index) => {
+          const status = getPhaseStatus(phase);
+          return (
+            <PhaseCard
+              key={phase.id}
+              phase={phase}
+              index={index}
+              status={status}
+              daysCompleted={getPhaseDaysCompleted(phase)}
+              onPress={() => {
+                navigation.navigate('PhaseDetail', { phaseId: phase.id });
+              }}
+            />
+          );
+        })}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -227,6 +285,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: Spacing.md,
   },
+  phaseNumberCircleCompleted: {
+    backgroundColor: Colors.success + '22',
+  },
   phaseNumber: {
     fontSize: Typography.lg,
     fontWeight: '800',
@@ -255,6 +316,9 @@ const styles = StyleSheet.create({
   phaseBadgeActive: {
     backgroundColor: Colors.primary + '33',
   },
+  phaseBadgeCompleted: {
+    backgroundColor: Colors.success + '22',
+  },
   phaseBadgeLocked: {
     backgroundColor: Colors.surface,
     borderWidth: 1,
@@ -271,6 +335,9 @@ const styles = StyleSheet.create({
   phaseBadgeTextActive: {
     color: Colors.primary,
   },
+  phaseBadgeTextCompleted: {
+    color: Colors.success,
+  },
   phaseBadgeTextLocked: {
     color: Colors.textMuted,
   },
@@ -282,15 +349,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressFill: {
-    width: '33%',
     height: 4,
     backgroundColor: Colors.primary,
     borderRadius: Radii.full,
-  },
-  progressLabel: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    marginTop: Spacing.xs,
   },
   phaseCardFooter: {
     flexDirection: 'row',

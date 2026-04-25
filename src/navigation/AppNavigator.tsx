@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 
 import { Colors, Spacing } from '../theme';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -45,17 +45,6 @@ function MainTabs() {
         tabBarActiveBackgroundColor: 'transparent',
         tabBarInactiveBackgroundColor: 'transparent',
         tabBarItemStyle: { backgroundColor: 'transparent' },
-        tabBarBadge: LOCKED_TAB_NAMES.has(route.name) ? 'Locked' : undefined,
-        tabBarBadgeStyle: {
-          backgroundColor: Colors.primary,
-          color: Colors.textPrimary,
-          fontSize: 9,
-          fontWeight: '700',
-          paddingHorizontal: Spacing.xs,
-          minWidth: 44,
-          height: 18,
-          lineHeight: 18,
-        },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -74,7 +63,17 @@ function MainTabs() {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          const isLocked = LOCKED_TAB_NAMES.has(route.name);
+          return (
+            <View style={styles.iconContainer}>
+              <Ionicons name={iconName} size={size} color={color} />
+              {isLocked && (
+                <View style={styles.lockBadge}>
+                  <Ionicons name='lock-closed' size={8} color={Colors.textPrimary} />
+                </View>
+              )}
+            </View>
+          );
         },
       })}
       screenListeners={({ route }) => ({
@@ -104,6 +103,26 @@ function MainTabs() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -6,
+    backgroundColor: Colors.primary,
+    borderRadius: 6,
+    width: 13,
+    height: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 export function AppNavigator() {
   return (
