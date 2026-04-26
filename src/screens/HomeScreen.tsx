@@ -21,7 +21,7 @@ import { type RootStackParamList, type Phase } from '../types';
 const HERO_LABEL_COLOR = 'rgba(255,255,255,0.7)';
 const HERO_SUBTITLE_COLOR = 'rgba(255,255,255,0.75)';
 
-const MILESTONE_SIZE = 84;
+const MILESTONE_SIZE = 52;
 const CURVE_HEIGHT = 90;
 const CURVE_DOT_COUNT = 22;
 const CURVE_DOT_SIZE = 5;
@@ -99,7 +99,7 @@ const Milestone: React.FC<MilestoneProps> = ({
         ]}
       >
         {status === 'completed' ? (
-          <Ionicons name='checkmark' size={36} color={Colors.textPrimary} />
+          <Ionicons name='checkmark' size={22} color={Colors.textPrimary} />
         ) : (
           <Text
             style={[styles.milestoneNumber, status === 'locked' && styles.milestoneNumberLocked]}
@@ -231,7 +231,7 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.heroSubtitle}>Each milestone takes you closer to mastery.</Text>
           </View>
           <View style={styles.heroDecoration}>
-            <Ionicons name='trophy' size={64} color={HERO_LABEL_COLOR} />
+            <Ionicons name='trophy' size={34} color={HERO_LABEL_COLOR} />
           </View>
         </View>
       </Animated.View>
@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
   },
   heroBanner: {
     backgroundColor: Colors.primary,
-    borderRadius: Radii.xl,
-    padding: Spacing.lg,
+    borderRadius: Radii.lg,
+    padding: Spacing.sm,
     flexDirection: 'row',
     overflow: 'hidden',
     ...Shadows.lg,
@@ -366,19 +366,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: HERO_LABEL_COLOR,
     letterSpacing: 1.5,
-    marginBottom: Spacing.xs,
+    marginBottom: 2,
   },
   heroTitle: {
-    fontSize: Typography.xxl,
+    fontSize: Typography.lg,
     fontWeight: '800',
     color: Colors.textPrimary,
-    lineHeight: Typography.lineHeightXl,
-    marginBottom: Spacing.sm,
+    lineHeight: Typography.lineHeightLg,
+    marginBottom: 2,
   },
   heroSubtitle: {
-    fontSize: Typography.sm,
+    fontSize: Typography.xs,
     color: HERO_SUBTITLE_COLOR,
-    lineHeight: Typography.lineHeightBase,
+    lineHeight: Typography.lineHeightSm,
   },
   heroDecoration: {
     justifyContent: 'center',
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   milestoneNumber: {
-    fontSize: Typography.xl,
+    fontSize: Typography.md,
     fontWeight: '800',
     color: Colors.textPrimary,
   },
@@ -428,9 +428,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.xs,
     backgroundColor: Colors.card,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radii.sm,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   milestoneTitle: {
-    fontSize: Typography.base,
+    fontSize: Typography.sm,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
   },
   trailStart: {
     alignItems: 'center',
-    marginTop: Spacing.md,
+    marginTop: Spacing.xxl,
     marginBottom: Spacing.lg,
   },
   startMarker: {
