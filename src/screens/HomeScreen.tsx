@@ -9,7 +9,7 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -26,6 +26,7 @@ const CURVE_HEIGHT = 90;
 const CURVE_DOT_COUNT = 22;
 const CURVE_DOT_SIZE = 5;
 const HERO_HIDE_DISTANCE = 140;
+const FINAL_MILESTONE_LABEL = "Champion's Ring";
 
 // Per-chapter horizontal positions (0 = far left, 1 = far right) for the
 // node center. Pattern is intentionally uneven — some center, some at edges.
@@ -52,8 +53,37 @@ interface MilestoneProps {
   status: PhaseStatus;
   daysCompleted: number;
   xPct: number;
+  isFinalMilestone?: boolean;
   onPress: () => void;
   onLayout?: (e: LayoutChangeEvent) => void;
+}
+
+function resolveNodeStyle(status: PhaseStatus, isFinalMilestone: boolean) {
+  if (status === 'completed') return styles.milestoneNodeCompleted;
+  if (status === 'active') return styles.milestoneNodeActive;
+  return isFinalMilestone ? styles.milestoneNodeFinal : styles.milestoneNodeLocked;
+}
+
+function NodeIcon({
+  status,
+  phaseNumber,
+  isFinalMilestone,
+}: {
+  status: PhaseStatus;
+  phaseNumber: number;
+  isFinalMilestone: boolean;
+}) {
+  if (status === 'completed') {
+    return <Ionicons name='checkmark' size={22} color={Colors.textPrimary} />;
+  }
+  if (status === 'locked') {
+    return isFinalMilestone ? (
+      <MaterialCommunityIcons name='boxing-glove' size={22} color={Colors.primary} />
+    ) : (
+      <Ionicons name='lock-closed' size={20} color={Colors.textMuted} />
+    );
+  }
+  return <Text style={styles.milestoneNumber}>{phaseNumber}</Text>;
 }
 
 const Milestone: React.FC<MilestoneProps> = ({
@@ -62,6 +92,7 @@ const Milestone: React.FC<MilestoneProps> = ({
   status,
   daysCompleted,
   xPct,
+  isFinalMilestone = false,
   onPress,
   onLayout,
 }) => {
@@ -85,6 +116,14 @@ const Milestone: React.FC<MilestoneProps> = ({
         maxWidth: `${xPct * 100 - 5}%` as const,
       };
 
+  const displayTitle = isFinalMilestone ? FINAL_MILESTONE_LABEL : phase.title;
+  const nodeStyle = resolveNodeStyle(status, isFinalMilestone);
+  const labelDimmed = status === 'locked' && !isFinalMilestone;
+  const glowPositionStyle = {
+    left: `${xPct * 100}%` as const,
+    marginLeft: -(MILESTONE_SIZE * 1.4) / 2,
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={isNavigable ? 0.8 : 1}
@@ -92,32 +131,28 @@ const Milestone: React.FC<MilestoneProps> = ({
       onLayout={onLayout}
       style={styles.milestoneRow}
     >
-      <View
-        style={[
-          styles.milestoneNode,
-          nodePositionStyle,
-          status === 'completed' && styles.milestoneNodeCompleted,
-          status === 'active' && styles.milestoneNodeActive,
-          status === 'locked' && styles.milestoneNodeLocked,
-        ]}
-      >
-        {status === 'completed' ? (
-          <Ionicons name='checkmark' size={22} color={Colors.textPrimary} />
-        ) : status === 'locked' ? (
-          <Ionicons name='lock-closed' size={20} color={Colors.textMuted} />
-        ) : (
-          <Text style={styles.milestoneNumber}>{phaseNumber}</Text>
-        )}
+      {isFinalMilestone && status === 'locked' && (
+        <View style={[styles.finalMilestoneGlow, glowPositionStyle]} />
+      )}
+      <View style={[styles.milestoneNode, nodePositionStyle, nodeStyle]}>
+        <NodeIcon status={status} phaseNumber={phaseNumber} isFinalMilestone={isFinalMilestone} />
       </View>
       <View
         style={[
           styles.milestoneLabel,
           labelPositionStyle,
-          status === 'locked' && styles.milestoneLabelLocked,
+          labelDimmed && styles.milestoneLabelLocked,
         ]}
       >
-        <Text style={[styles.milestoneTitle, status === 'locked' && styles.milestoneTitleLocked]}>
-          {phase.title}
+        {isFinalMilestone && <Text style={styles.finalBadge}>FINAL STAGE</Text>}
+        <Text
+          style={[
+            styles.milestoneTitle,
+            labelDimmed && styles.milestoneTitleLocked,
+            isFinalMilestone && styles.milestoneTitleFinal,
+          ]}
+        >
+          {displayTitle}
         </Text>
         <Text style={styles.milestoneWeekRange}>{phase.weekRange}</Text>
         {status === 'active' && (
@@ -284,6 +319,7 @@ export const HomeScreen: React.FC = () => {
                   status={status}
                   daysCompleted={getPhaseDaysCompleted(phase)}
                   xPct={xPct}
+                  isFinalMilestone={originalIndex === CURRICULUM.length - 1}
                   onPress={() => {
                     navigation.navigate('PhaseDetail', { phaseId: phase.id });
                   }}
@@ -455,6 +491,27 @@ const styles = StyleSheet.create({
   milestoneLabelLocked: {
     opacity: 0.6,
   },
+  milestoneNodeFinal: {
+    backgroundColor: Colors.surface,
+    borderColor: Colors.primary,
+    borderWidth: 3,
+  },
+  finalMilestoneGlow: {
+    position: 'absolute',
+    top: -(MILESTONE_SIZE * 0.2),
+    width: MILESTONE_SIZE * 1.4,
+    height: MILESTONE_SIZE * 1.4,
+    borderRadius: Radii.full,
+    backgroundColor: Colors.primary,
+    opacity: 0.15,
+  },
+  finalBadge: {
+    fontSize: Typography.xs,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
   milestoneTitle: {
     fontSize: Typography.sm,
     fontWeight: '700',
@@ -462,6 +519,10 @@ const styles = StyleSheet.create({
   },
   milestoneTitleLocked: {
     color: Colors.textSecondary,
+  },
+  milestoneTitleFinal: {
+    color: Colors.primary,
+    fontWeight: '800',
   },
   milestoneWeekRange: {
     fontSize: Typography.sm,
