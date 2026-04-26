@@ -352,13 +352,6 @@ export const HomeScreen: React.FC = () => {
           })}
         </View>
 
-        <View style={styles.trailStart}>
-          <View style={styles.startMarker}>
-            <Ionicons name='flag' size={20} color={Colors.primary} />
-          </View>
-          <Text style={styles.startLabel}>START HERE</Text>
-        </View>
-
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
@@ -583,28 +576,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     marginLeft: -CURVE_DOT_SIZE / 2,
     opacity: 0.7,
-  },
-  trailStart: {
-    alignItems: 'center',
-    marginTop: Spacing.xxl,
-    marginBottom: Spacing.lg,
-  },
-  startMarker: {
-    width: 44,
-    height: 44,
-    borderRadius: Radii.full,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    marginBottom: Spacing.xs,
-  },
-  startLabel: {
-    fontSize: Typography.xs,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: 1.5,
   },
   bottomPadding: {
     height: Spacing.xl,
