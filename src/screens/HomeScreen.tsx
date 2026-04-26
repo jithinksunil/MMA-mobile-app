@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -53,6 +53,7 @@ interface MilestoneProps {
   daysCompleted: number;
   xPct: number;
   onPress: () => void;
+  onLayout?: (e: LayoutChangeEvent) => void;
 }
 
 const Milestone: React.FC<MilestoneProps> = ({
@@ -62,6 +63,7 @@ const Milestone: React.FC<MilestoneProps> = ({
   daysCompleted,
   xPct,
   onPress,
+  onLayout,
 }) => {
   const isNavigable = status !== 'locked';
   const progressPercent = phase.days.length > 0 ? daysCompleted / phase.days.length : 0;
@@ -87,6 +89,7 @@ const Milestone: React.FC<MilestoneProps> = ({
     <TouchableOpacity
       activeOpacity={isNavigable ? 0.8 : 1}
       onPress={isNavigable ? onPress : undefined}
+      onLayout={onLayout}
       style={styles.milestoneRow}
     >
       <View
@@ -175,6 +178,8 @@ export const HomeScreen: React.FC = () => {
   const [scrollContentHeight, setScrollContentHeight] = useState(0);
   const [heroHeight, setHeroHeight] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const milestoneYPositions = useRef<Map<number, number>>(new Map());
+  const hasScrolledToActive = useRef(false);
 
   const maxScroll = Math.max(1, scrollContentHeight - scrollLayoutHeight);
   const heroTranslateY = scrollY.interpolate({
@@ -199,6 +204,22 @@ export const HomeScreen: React.FC = () => {
   const reversed = [...CURRICULUM]
     .map((phase, originalIndex) => ({ phase, originalIndex }))
     .reverse();
+
+  const activeRenderIndex = reversed.findIndex(({ phase }) => getPhaseStatus(phase) === 'active');
+
+  useEffect(() => {
+    if (hasScrolledToActive.current) return;
+    if (scrollContentHeight === 0 || scrollLayoutHeight === 0) return;
+    hasScrolledToActive.current = true;
+    const y =
+      activeRenderIndex >= 0 ? milestoneYPositions.current.get(activeRenderIndex) : undefined;
+    if (y !== undefined) {
+      const offset = Math.max(0, y - scrollLayoutHeight / 2 + MILESTONE_SIZE / 2);
+      scrollRef.current?.scrollTo({ y: offset, animated: false });
+    } else {
+      scrollRef.current?.scrollToEnd({ animated: false });
+    }
+  }, [scrollContentHeight, scrollLayoutHeight, activeRenderIndex]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -248,7 +269,6 @@ export const HomeScreen: React.FC = () => {
         onLayout={(e: LayoutChangeEvent) => setScrollLayoutHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(_w, h) => {
           setScrollContentHeight(h);
-          scrollRef.current?.scrollToEnd({ animated: false });
         }}
       >
         <View style={styles.trail}>
@@ -268,6 +288,9 @@ export const HomeScreen: React.FC = () => {
                   xPct={xPct}
                   onPress={() => {
                     navigation.navigate('PhaseDetail', { phaseId: phase.id });
+                  }}
+                  onLayout={(e) => {
+                    milestoneYPositions.current.set(renderIndex, e.nativeEvent.layout.y);
                   }}
                 />
                 {next && <DottedCurve fromX={xPct} toX={nextXPct} />}
