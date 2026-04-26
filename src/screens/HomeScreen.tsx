@@ -103,12 +103,10 @@ const Milestone: React.FC<MilestoneProps> = ({
       >
         {status === 'completed' ? (
           <Ionicons name='checkmark' size={22} color={Colors.textPrimary} />
+        ) : status === 'locked' ? (
+          <Ionicons name='lock-closed' size={20} color={Colors.textMuted} />
         ) : (
-          <Text
-            style={[styles.milestoneNumber, status === 'locked' && styles.milestoneNumberLocked]}
-          >
-            {phaseNumber}
-          </Text>
+          <Text style={styles.milestoneNumber}>{phaseNumber}</Text>
         )}
       </View>
       <View
@@ -443,9 +441,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.md,
     fontWeight: '800',
     color: Colors.textPrimary,
-  },
-  milestoneNumberLocked: {
-    color: Colors.textMuted,
   },
   milestoneLabel: {
     position: 'absolute',
