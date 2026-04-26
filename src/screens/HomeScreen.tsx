@@ -102,27 +102,48 @@ const Milestone: React.FC<MilestoneProps> = ({
 
   const nodePositionStyle = {
     left: `${xPct * 100}%` as const,
+    top: '50%' as const,
     marginLeft: -MILESTONE_SIZE / 2,
+    marginTop: -MILESTONE_SIZE / 2,
   };
-  const labelPositionStyle = labelOnRight
-    ? {
-        left: `${xPct * 100}%` as const,
-        marginLeft: MILESTONE_SIZE / 2 + Spacing.sm,
-        maxWidth: `${(1 - xPct) * 100 - 5}%` as const,
-      }
-    : {
-        right: `${(1 - xPct) * 100}%` as const,
-        marginRight: MILESTONE_SIZE / 2 + Spacing.sm,
-        maxWidth: `${xPct * 100 - 5}%` as const,
-      };
+  const glowPositionStyle = {
+    left: `${xPct * 100}%` as const,
+    top: '50%' as const,
+    marginLeft: -(MILESTONE_SIZE * 1.4) / 2,
+    marginTop: -(MILESTONE_SIZE * 1.4) / 2,
+  };
 
   const displayTitle = isFinalMilestone ? FINAL_MILESTONE_LABEL : phase.title;
   const nodeStyle = resolveNodeStyle(status, isFinalMilestone);
   const labelDimmed = status === 'locked' && !isFinalMilestone;
-  const glowPositionStyle = {
-    left: `${xPct * 100}%` as const,
-    marginLeft: -(MILESTONE_SIZE * 1.4) / 2,
-  };
+  const labelContent = (
+    <>
+      {isFinalMilestone && <Text style={styles.finalBadge}>VALLEY 1</Text>}
+      <Text
+        style={[
+          styles.milestoneTitle,
+          labelDimmed && styles.milestoneTitleLocked,
+          isFinalMilestone && styles.milestoneTitleFinal,
+        ]}
+      >
+        {displayTitle}
+      </Text>
+      <Text style={styles.milestoneWeekRange}>{phase.weekRange}</Text>
+      {status === 'active' && (
+        <>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progressPercent * 100}%` }]} />
+          </View>
+          <Text style={styles.milestoneMeta}>
+            {daysCompleted}/{phase.days.length} sessions
+          </Text>
+        </>
+      )}
+      {status === 'completed' && (
+        <Text style={styles.milestoneMeta}>{phase.days.length} sessions complete</Text>
+      )}
+    </>
+  );
 
   return (
     <TouchableOpacity
@@ -137,38 +158,36 @@ const Milestone: React.FC<MilestoneProps> = ({
       <View style={[styles.milestoneNode, nodePositionStyle, nodeStyle]}>
         <NodeIcon status={status} phaseNumber={phaseNumber} isFinalMilestone={isFinalMilestone} />
       </View>
-      <View
-        style={[
-          styles.milestoneLabel,
-          labelPositionStyle,
-          labelDimmed && styles.milestoneLabelLocked,
-        ]}
-      >
-        {isFinalMilestone && <Text style={styles.finalBadge}>VALLEY 1</Text>}
-        <Text
-          style={[
-            styles.milestoneTitle,
-            labelDimmed && styles.milestoneTitleLocked,
-            isFinalMilestone && styles.milestoneTitleFinal,
-          ]}
-        >
-          {displayTitle}
-        </Text>
-        <Text style={styles.milestoneWeekRange}>{phase.weekRange}</Text>
-        {status === 'active' && (
-          <>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${progressPercent * 100}%` }]} />
+      {labelOnRight ? (
+        <>
+          <View style={{ width: `${xPct * 100}%` }} />
+          <View
+            style={[
+              styles.milestoneLabel,
+              { marginLeft: MILESTONE_SIZE / 2 + Spacing.md },
+              labelDimmed && styles.milestoneLabelLocked,
+            ]}
+          >
+            {labelContent}
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.leftLabelWrapper}>
+            <View
+              style={[
+                styles.milestoneLabel,
+                styles.milestoneLabelLeft,
+                { marginRight: MILESTONE_SIZE / 2 + Spacing.md },
+                labelDimmed && styles.milestoneLabelLocked,
+              ]}
+            >
+              {labelContent}
             </View>
-            <Text style={styles.milestoneMeta}>
-              {daysCompleted}/{phase.days.length} sessions
-            </Text>
-          </>
-        )}
-        {status === 'completed' && (
-          <Text style={styles.milestoneMeta}>{phase.days.length} sessions complete</Text>
-        )}
-      </View>
+          </View>
+          <View style={{ width: `${(1 - xPct) * 100}%` }} />
+        </>
+      )}
     </TouchableOpacity>
   );
 };
@@ -262,7 +281,7 @@ export const HomeScreen: React.FC = () => {
       >
         <View>
           <Text style={styles.greeting}>Start your training</Text>
-          <Text style={styles.username}>Your MMA Journey</Text>
+          <Text style={styles.username}>Valley MMA</Text>
         </View>
         <TouchableOpacity style={styles.notificationBtn}>
           <Ionicons name='notifications-outline' size={24} color={Colors.textPrimary} />
@@ -447,12 +466,13 @@ const styles = StyleSheet.create({
   },
   milestoneRow: {
     width: '100%',
-    height: MILESTONE_SIZE,
+    minHeight: MILESTONE_SIZE,
     position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   milestoneNode: {
     position: 'absolute',
-    top: 0,
     width: MILESTONE_SIZE,
     height: MILESTONE_SIZE,
     borderRadius: Radii.full,
@@ -479,8 +499,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   milestoneLabel: {
-    position: 'absolute',
-    top: Spacing.xs,
     backgroundColor: Colors.card,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
@@ -491,6 +509,12 @@ const styles = StyleSheet.create({
   milestoneLabelLocked: {
     opacity: 0.6,
   },
+  leftLabelWrapper: {
+    flex: 1,
+  },
+  milestoneLabelLeft: {
+    alignSelf: 'flex-end',
+  },
   milestoneNodeFinal: {
     backgroundColor: Colors.surface,
     borderColor: Colors.primary,
@@ -498,7 +522,6 @@ const styles = StyleSheet.create({
   },
   finalMilestoneGlow: {
     position: 'absolute',
-    top: -(MILESTONE_SIZE * 0.2),
     width: MILESTONE_SIZE * 1.4,
     height: MILESTONE_SIZE * 1.4,
     borderRadius: Radii.full,
