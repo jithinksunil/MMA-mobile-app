@@ -70,7 +70,7 @@ export const PhaseDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   if (!phase) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <Text style={styles.errorText}>Phase not found.</Text>
+        <Text style={styles.errorText}>Chapter not found.</Text>
       </SafeAreaView>
     );
   }

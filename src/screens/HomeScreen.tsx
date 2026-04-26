@@ -1,5 +1,13 @@
-import type React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Animated,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -8,112 +16,172 @@ import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useProgressContext } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculum';
 import { Colors, Spacing, Typography, Radii, Shadows } from '../theme';
-import { Card } from '../components';
 import { type RootStackParamList, type Phase } from '../types';
 
 const HERO_LABEL_COLOR = 'rgba(255,255,255,0.7)';
 const HERO_SUBTITLE_COLOR = 'rgba(255,255,255,0.75)';
 
+const MILESTONE_SIZE = 84;
+const CURVE_HEIGHT = 90;
+const CURVE_DOT_COUNT = 22;
+const CURVE_DOT_SIZE = 5;
+const HERO_HIDE_DISTANCE = 140;
+
+// Per-chapter horizontal positions (0 = far left, 1 = far right) for the
+// node center. Pattern is intentionally uneven — some center, some at edges.
+const CHAPTER_X_PCT: number[] = [
+  0.22, // Chapter 1
+  0.78, // Chapter 2
+  0.32, // Chapter 3
+  0.82, // Chapter 4
+  0.5, // Chapter 5
+  0.18, // Chapter 6
+  0.7, // Chapter 7
+  0.28, // Chapter 8
+  0.78, // Chapter 9
+  0.5, // Chapter 10
+];
+const DEFAULT_X_PCT = 0.5;
+
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 type PhaseStatus = 'completed' | 'active' | 'locked';
 
-interface PhaseCardProps {
+interface MilestoneProps {
   phase: Phase;
-  index: number;
+  phaseNumber: number;
   status: PhaseStatus;
   daysCompleted: number;
+  xPct: number;
   onPress: () => void;
 }
 
-const PhaseCard: React.FC<PhaseCardProps> = ({ phase, index, status, daysCompleted, onPress }) => {
+const Milestone: React.FC<MilestoneProps> = ({
+  phase,
+  phaseNumber,
+  status,
+  daysCompleted,
+  xPct,
+  onPress,
+}) => {
   const isNavigable = status !== 'locked';
   const progressPercent = phase.days.length > 0 ? daysCompleted / phase.days.length : 0;
+  const labelOnRight = xPct < 0.5;
+
+  const nodePositionStyle = {
+    left: `${xPct * 100}%` as const,
+    marginLeft: -MILESTONE_SIZE / 2,
+  };
+  const labelPositionStyle = labelOnRight
+    ? {
+        left: `${xPct * 100}%` as const,
+        marginLeft: MILESTONE_SIZE / 2 + Spacing.sm,
+        maxWidth: `${(1 - xPct) * 100 - 5}%` as const,
+      }
+    : {
+        right: `${(1 - xPct) * 100}%` as const,
+        marginRight: MILESTONE_SIZE / 2 + Spacing.sm,
+        maxWidth: `${xPct * 100 - 5}%` as const,
+      };
 
   return (
-    <Card
-      style={styles.phaseCard}
+    <TouchableOpacity
+      activeOpacity={isNavigable ? 0.8 : 1}
       onPress={isNavigable ? onPress : undefined}
-      elevated={isNavigable}
+      style={styles.milestoneRow}
     >
-      <View style={styles.phaseCardHeader}>
-        <View
-          style={[
-            styles.phaseNumberCircle,
-            status === 'completed' && styles.phaseNumberCircleCompleted,
-          ]}
-        >
-          {status === 'completed' ? (
-            <Ionicons name='checkmark' size={22} color={Colors.success} />
-          ) : (
-            <Text style={styles.phaseNumber}>{index + 1}</Text>
-          )}
-        </View>
-        <View style={styles.phaseMeta}>
-          <Text style={styles.phaseTitle}>{phase.title}</Text>
-          <Text style={styles.phaseWeekRange}>{phase.weekRange}</Text>
-        </View>
-        <View
-          style={[
-            styles.phaseBadge,
-            status === 'active' && styles.phaseBadgeActive,
-            status === 'completed' && styles.phaseBadgeCompleted,
-            status === 'locked' && styles.phaseBadgeLocked,
-          ]}
-        >
-          {status === 'locked' && (
-            <Ionicons
-              name='lock-closed'
-              size={10}
-              color={Colors.textMuted}
-              style={styles.badgeLockIcon}
-            />
-          )}
-          {status === 'completed' && (
-            <Ionicons
-              name='checkmark'
-              size={10}
-              color={Colors.success}
-              style={styles.badgeLockIcon}
-            />
-          )}
+      <View
+        style={[
+          styles.milestoneNode,
+          nodePositionStyle,
+          status === 'completed' && styles.milestoneNodeCompleted,
+          status === 'active' && styles.milestoneNodeActive,
+          status === 'locked' && styles.milestoneNodeLocked,
+        ]}
+      >
+        {status === 'completed' ? (
+          <Ionicons name='checkmark' size={36} color={Colors.textPrimary} />
+        ) : (
           <Text
-            style={[
-              styles.phaseBadgeText,
-              status === 'active' && styles.phaseBadgeTextActive,
-              status === 'completed' && styles.phaseBadgeTextCompleted,
-              status === 'locked' && styles.phaseBadgeTextLocked,
-            ]}
+            style={[styles.milestoneNumber, status === 'locked' && styles.milestoneNumberLocked]}
           >
-            {status === 'active' ? 'ACTIVE' : status === 'completed' ? 'DONE' : 'LOCKED'}
+            {phaseNumber}
           </Text>
-        </View>
+        )}
       </View>
-      {status === 'active' && (
-        <>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progressPercent * 100}%` }]} />
-          </View>
-          <View style={styles.phaseCardFooter}>
-            <Text style={styles.daysLabel}>
-              {daysCompleted} of {phase.days.length} sessions complete
+      <View
+        style={[
+          styles.milestoneLabel,
+          labelPositionStyle,
+          status === 'locked' && styles.milestoneLabelLocked,
+        ]}
+      >
+        <Text style={[styles.milestoneTitle, status === 'locked' && styles.milestoneTitleLocked]}>
+          {phase.title}
+        </Text>
+        <Text style={styles.milestoneWeekRange}>{phase.weekRange}</Text>
+        {status === 'active' && (
+          <>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${progressPercent * 100}%` }]} />
+            </View>
+            <Text style={styles.milestoneMeta}>
+              {daysCompleted}/{phase.days.length} sessions
             </Text>
-            <Ionicons name='chevron-forward' size={16} color={Colors.primary} />
-          </View>
-        </>
-      )}
-      {status === 'completed' && (
-        <View style={styles.phaseCardFooter}>
-          <Text style={styles.daysLabel}>{phase.days.length} sessions complete</Text>
-          <Ionicons name='chevron-forward' size={16} color={Colors.textMuted} />
-        </View>
-      )}
-    </Card>
+          </>
+        )}
+        {status === 'completed' && (
+          <Text style={styles.milestoneMeta}>{phase.days.length} sessions complete</Text>
+        )}
+      </View>
+    </TouchableOpacity>
   );
+};
+
+interface CurveProps {
+  fromX: number;
+  toX: number;
+}
+
+const DottedCurve: React.FC<CurveProps> = ({ fromX, toX }) => {
+  const dots = Array.from({ length: CURVE_DOT_COUNT }, (_, i) => {
+    const t = i / (CURVE_DOT_COUNT - 1);
+    // ease-in-out cosine for an S-curve feel
+    const eased = 0.5 - 0.5 * Math.cos(t * Math.PI);
+    const xPct = fromX + eased * (toX - fromX);
+    const y = t * CURVE_HEIGHT;
+    return (
+      <View
+        key={i}
+        style={[
+          styles.curveDot,
+          {
+            top: y - CURVE_DOT_SIZE / 2,
+            left: `${xPct * 100}%`,
+          },
+        ]}
+      />
+    );
+  });
+
+  return <View style={styles.curveContainer}>{dots}</View>;
 };
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavProp>();
   const { getDayStatus } = useProgressContext();
+  const scrollRef = useRef<ScrollView>(null);
+  const [scrollY] = useState(() => new Animated.Value(0));
+  const [scrollLayoutHeight, setScrollLayoutHeight] = useState(0);
+  const [scrollContentHeight, setScrollContentHeight] = useState(0);
+  const [heroHeight, setHeroHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const maxScroll = Math.max(1, scrollContentHeight - scrollLayoutHeight);
+  const heroTranslateY = scrollY.interpolate({
+    inputRange: [Math.max(0, maxScroll - HERO_HIDE_DISTANCE), maxScroll],
+    outputRange: [-heroHeight, 0],
+    extrapolate: 'clamp',
+  });
 
   const getPhaseStatus = (phase: Phase): PhaseStatus => {
     const statuses = phase.days.map((d) => getDayStatus(d.id));
@@ -125,53 +193,95 @@ export const HomeScreen: React.FC = () => {
   const getPhaseDaysCompleted = (phase: Phase): number =>
     phase.days.filter((d) => getDayStatus(d.id) === 'completed').length;
 
+  const xPctFor = (originalIndex: number): number => CHAPTER_X_PCT[originalIndex] ?? DEFAULT_X_PCT;
+
+  // Render hardest (last) phase at top, easiest (first) at bottom.
+  const reversed = [...CURRICULUM]
+    .map((phase, originalIndex) => ({ phase, originalIndex }))
+    .reverse();
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <View
+        style={styles.header}
+        onLayout={(e: LayoutChangeEvent) => setHeaderHeight(e.nativeEvent.layout.height)}
       >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Start your training</Text>
-            <Text style={styles.username}>Your MMA Journey</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons name='notifications-outline' size={24} color={Colors.textPrimary} />
-            <View style={styles.notificationDot} />
-          </TouchableOpacity>
+        <View>
+          <Text style={styles.greeting}>Start your training</Text>
+          <Text style={styles.username}>Your MMA Journey</Text>
         </View>
+        <TouchableOpacity style={styles.notificationBtn}>
+          <Ionicons name='notifications-outline' size={24} color={Colors.textPrimary} />
+          <View style={styles.notificationDot} />
+        </TouchableOpacity>
+      </View>
 
+      <Animated.View
+        pointerEvents='box-none'
+        onLayout={(e: LayoutChangeEvent) => setHeroHeight(e.nativeEvent.layout.height)}
+        style={[
+          styles.heroOverlay,
+          { top: headerHeight, transform: [{ translateY: heroTranslateY }] },
+        ]}
+      >
         <View style={styles.heroBanner}>
           <View style={styles.heroContent}>
             <Text style={styles.heroLabel}>TRAINING PROGRAM</Text>
-            <Text style={styles.heroTitle}>Build Your{'\n'}Foundation</Text>
-            <Text style={styles.heroSubtitle}>
-              Structured MMA training from beginner to advanced.
-            </Text>
+            <Text style={styles.heroTitle}>Climb Your{'\n'}Path</Text>
+            <Text style={styles.heroSubtitle}>Each milestone takes you closer to mastery.</Text>
           </View>
           <View style={styles.heroDecoration}>
-            <Ionicons name='barbell' size={80} color={HERO_LABEL_COLOR} />
+            <Ionicons name='trophy' size={64} color={HERO_LABEL_COLOR} />
           </View>
         </View>
+      </Animated.View>
 
-        <Text style={styles.sectionTitle}>Training Phases</Text>
-        {CURRICULUM.map((phase, index) => {
-          const status = getPhaseStatus(phase);
-          return (
-            <PhaseCard
-              key={phase.id}
-              phase={phase}
-              index={index}
-              status={status}
-              daysCompleted={getPhaseDaysCompleted(phase)}
-              onPress={() => {
-                navigation.navigate('PhaseDetail', { phaseId: phase.id });
-              }}
-            />
-          );
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: false,
         })}
+        onLayout={(e: LayoutChangeEvent) => setScrollLayoutHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(_w, h) => {
+          setScrollContentHeight(h);
+          scrollRef.current?.scrollToEnd({ animated: false });
+        }}
+      >
+        <View style={styles.trail}>
+          {reversed.map(({ phase, originalIndex }, renderIndex) => {
+            const status = getPhaseStatus(phase);
+            const xPct = xPctFor(originalIndex);
+            const next = reversed[renderIndex + 1];
+            const nextXPct = next ? xPctFor(next.originalIndex) : xPct;
+
+            return (
+              <React.Fragment key={phase.id}>
+                <Milestone
+                  phase={phase}
+                  phaseNumber={originalIndex + 1}
+                  status={status}
+                  daysCompleted={getPhaseDaysCompleted(phase)}
+                  xPct={xPct}
+                  onPress={() => {
+                    navigation.navigate('PhaseDetail', { phaseId: phase.id });
+                  }}
+                />
+                {next && <DottedCurve fromX={xPct} toX={nextXPct} />}
+              </React.Fragment>
+            );
+          })}
+        </View>
+
+        <View style={styles.trailStart}>
+          <View style={styles.startMarker}>
+            <Ionicons name='flag' size={20} color={Colors.primary} />
+          </View>
+          <Text style={styles.startLabel}>START HERE</Text>
+        </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -194,7 +304,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
+    zIndex: 20,
+    backgroundColor: Colors.background,
   },
   greeting: {
     fontSize: Typography.sm,
@@ -227,11 +340,20 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.background,
   },
+  heroOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.md,
+    backgroundColor: Colors.background,
+    zIndex: 10,
+  },
   heroBanner: {
     backgroundColor: Colors.primary,
     borderRadius: Radii.xl,
     padding: Spacing.lg,
-    marginBottom: Spacing.lg,
     flexDirection: 'row',
     overflow: 'hidden',
     ...Shadows.lg,
@@ -261,110 +383,126 @@ const styles = StyleSheet.create({
   heroDecoration: {
     justifyContent: 'center',
     alignItems: 'center',
+    paddingLeft: Spacing.md,
   },
-  sectionTitle: {
-    fontSize: Typography.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    marginTop: Spacing.xs,
+  trail: {
+    paddingTop: Spacing.md,
   },
-  phaseCard: {
-    marginBottom: Spacing.sm,
+  milestoneRow: {
+    width: '100%',
+    height: MILESTONE_SIZE,
+    position: 'relative',
   },
-  phaseCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  phaseNumberCircle: {
-    width: 44,
-    height: 44,
+  milestoneNode: {
+    position: 'absolute',
+    top: 0,
+    width: MILESTONE_SIZE,
+    height: MILESTONE_SIZE,
     borderRadius: Radii.full,
-    backgroundColor: Colors.primary + '22',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
+    borderWidth: 4,
+    ...Shadows.md,
   },
-  phaseNumberCircleCompleted: {
-    backgroundColor: Colors.success + '22',
+  milestoneNodeActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primaryLight,
   },
-  phaseNumber: {
-    fontSize: Typography.lg,
+  milestoneNodeCompleted: {
+    backgroundColor: Colors.success,
+    borderColor: Colors.success,
+  },
+  milestoneNodeLocked: {
+    backgroundColor: Colors.surface,
+    borderColor: Colors.border,
+  },
+  milestoneNumber: {
+    fontSize: Typography.xl,
     fontWeight: '800',
-    color: Colors.primary,
+    color: Colors.textPrimary,
   },
-  phaseMeta: {
-    flex: 1,
+  milestoneNumberLocked: {
+    color: Colors.textMuted,
   },
-  phaseTitle: {
+  milestoneLabel: {
+    position: 'absolute',
+    top: Spacing.xs,
+    backgroundColor: Colors.card,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  milestoneLabelLocked: {
+    opacity: 0.6,
+  },
+  milestoneTitle: {
     fontSize: Typography.base,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  phaseWeekRange: {
+  milestoneTitleLocked: {
+    color: Colors.textSecondary,
+  },
+  milestoneWeekRange: {
     fontSize: Typography.sm,
     color: Colors.textSecondary,
     marginTop: 2,
   },
-  phaseBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radii.full,
-  },
-  phaseBadgeActive: {
-    backgroundColor: Colors.primary + '33',
-  },
-  phaseBadgeCompleted: {
-    backgroundColor: Colors.success + '22',
-  },
-  phaseBadgeLocked: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  badgeLockIcon: {
-    marginRight: 3,
-  },
-  phaseBadgeText: {
+  milestoneMeta: {
     fontSize: Typography.xs,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  phaseBadgeTextActive: {
-    color: Colors.primary,
-  },
-  phaseBadgeTextCompleted: {
-    color: Colors.success,
-  },
-  phaseBadgeTextLocked: {
-    color: Colors.textMuted,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
   },
   progressTrack: {
     height: 4,
     backgroundColor: Colors.border,
     borderRadius: Radii.full,
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
     overflow: 'hidden',
+    width: 140,
   },
   progressFill: {
     height: 4,
     backgroundColor: Colors.primary,
     borderRadius: Radii.full,
   },
-  phaseCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: Spacing.sm,
-    paddingTop: Spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+  curveContainer: {
+    height: CURVE_HEIGHT,
+    width: '100%',
+    position: 'relative',
   },
-  daysLabel: {
-    fontSize: Typography.sm,
-    color: Colors.textSecondary,
+  curveDot: {
+    position: 'absolute',
+    width: CURVE_DOT_SIZE,
+    height: CURVE_DOT_SIZE,
+    borderRadius: Radii.full,
+    backgroundColor: Colors.primary,
+    marginLeft: -CURVE_DOT_SIZE / 2,
+    opacity: 0.7,
+  },
+  trailStart: {
+    alignItems: 'center',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  startMarker: {
+    width: 44,
+    height: 44,
+    borderRadius: Radii.full,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    marginBottom: Spacing.xs,
+  },
+  startLabel: {
+    fontSize: Typography.xs,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1.5,
   },
   bottomPadding: {
     height: Spacing.xl,

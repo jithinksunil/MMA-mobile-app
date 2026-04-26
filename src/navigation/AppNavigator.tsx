@@ -1,5 +1,9 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  type Theme as NavigationTheme,
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +24,17 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 72;
 const LOCKED_TAB_NAMES = new Set<keyof BottomTabParamList>(['ExploreTab', 'SettingsTab']);
+const navigationTheme: NavigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: Colors.background,
+    border: Colors.border,
+    card: Colors.surface,
+    primary: Colors.primary,
+    text: Colors.textPrimary,
+  },
+};
 
 function MainTabs() {
   return (
@@ -126,7 +141,7 @@ const styles = StyleSheet.create({
 
 export function AppNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
