@@ -144,7 +144,7 @@ const Milestone: React.FC<MilestoneProps> = ({
           labelDimmed && styles.milestoneLabelLocked,
         ]}
       >
-        {isFinalMilestone && <Text style={styles.finalBadge}>FINAL STAGE</Text>}
+        {isFinalMilestone && <Text style={styles.finalBadge}>VALLEY 1</Text>}
         <Text
           style={[
             styles.milestoneTitle,
@@ -281,7 +281,7 @@ export const HomeScreen: React.FC = () => {
         <View style={styles.heroBanner}>
           <View style={styles.heroContent}>
             <Text style={styles.heroLabel}>TRAINING PROGRAM</Text>
-            <Text style={styles.heroTitle}>Climb Your{'\n'}Path</Text>
+            <Text style={styles.heroTitle}>Climb Your Path</Text>
             <Text style={styles.heroSubtitle}>Each milestone takes you closer to mastery.</Text>
           </View>
           <View style={styles.heroDecoration}>
